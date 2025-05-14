@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatório do Paciente</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #d9ecff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      width: 80%;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .patient-info {
+      background: #b3d9ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .patient-info h3 {
+      margin: 0;
+      padding-bottom: 10px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .filters select,
+    .filters input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin: 5px;
+      width: 200px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #ddd;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #7aa9d6;
+      color: white;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 15px;
+      border: none;
+      background-color: #7aa9d6;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #5f8cb7;
+    }
+
+    .paginacao {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .paginacao button {
+      background-color: #7aa9d6;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 50%;
+      cursor: pointer;
+      min-width: 36px;
+      height: 36px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .paginacao button.active {
+      background-color: #347fd4;
+      box-shadow: 0 0 0 2px #dceeff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="patient-info">
+      <h3>Informações do Paciente</h3>
+      <p><strong>Nome:</strong> <span id="patientName">Carregando...</span></p>
+      <p><strong>Número de Utente:</strong> <span id="patientNumero_utente">Carregando...</span></p>
+      <p><strong>Contacto:</strong> <span id="patientContact">Carregando...</span></p>
+    </div>
+
+    <div class="filters">
+      <div>
+        <label for="filterDate">Data</label>
+        <input type="date" id="filterDate" />
+      </div>
+      <div>
+        <label for="filterGame">Jogo</label>
+        <select id="filterGame"></select>
+      </div>
+      <div>
+        <label for="filterLevel">Nível</label>
+        <select id="filterLevel"></select>
+      </div>
+      <div>
+        <label for="filterHints">Dicas</label>
+        <select id="filterHints"></select>
+      </div>
+      <div>
+        <label for="filterTime">Tempo Máximo</label>
+        <input type="text" id="filterTime" placeholder="Tempo Máximo (segundos)" />
+      </div>
+      <button onclick="applyFilters()">Filtrar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h3>Histórico de Jogos</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Jogo</th>
+          <th>Nível</th>
+          <th>Tempo</th>
+          <th>Dicas</th>
+        </tr>
+      </thead>
+      <tbody id="historicoTable"></tbody>
+    </table>
+    <div class="paginacao" id="paginacao"></div>
+  </div>
+
+  <button onclick="voltar()">Voltar</button>
+
+  <script>
+    let historico = [];
+    let historicoFiltrado = [];
+    let patientData = {};
+    let paginaAtual = 1;
+    const jogosPorPagina = 15;
+
+    function getId_utenteFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("utente");
+    }
+
+    async function carregarPaciente() {
+      const id_utente = getId_utenteFromURL();
+      if (!id_utente) {
+        alert("Número de utente não informado.");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8080/api/utentes");
+        const todosUtentes = await response.json();
+        patientData = todosUtentes.find(u => u.numero_utente === id_utente);
+
+        if (!patientData) {
+          alert("Utente não encontrado.");
+          return;
+        }
+
+        document.getElementById("patientName").textContent = patientData.nome || "Não disponível";
+        document.getElementById("patientNumero_utente").textContent = patientData.numero_utente || "Não disponível";
+        document.getElementById("patientContact").textContent = patientData.contacto || "Não disponível";
+      } catch (error) {
+        console.error("Erro ao carregar dados do paciente:", error);
+      }
+    }
+
+    async function carregarRelatorio() {
+      if (!patientData || !patientData.id) return;
+
+      try {
+        const partidasResponse = await fetch("http://localhost:8080/api/partidas");
+        const todasPartidas = await partidasResponse.json();
+        const partidasPaciente = todasPartidas.filter(p => p.id_utente === patientData.id);
+
+        const jogosResponse = await fetch("http://localhost:8080/api/jogos");
+        const listaJogos = await jogosResponse.json();
+
+        historico = partidasPaciente.map(p => {
+          const jogo = listaJogos.find(j => j.id_jogo === p.id_jogo);
+          return {
+            ...p,
+            nomeJogo: jogo?.nome_jogo || `Jogo #${p.id_jogo}`
+          };
+        });
+
+        historico.sort((a, b) => new Date(b.data_jogo) - new Date(a.data_jogo));
+        historicoFiltrado = [...historico];
+
+        renderHistorico();
+        renderPaginacao();
+        carregarFiltros();
+      } catch (error) {
+        console.error("Erro ao buscar histórico de partidas:", error);
+      }
+    }
+
+    function renderHistorico() {
+      const tabela = document.getElementById("historicoTable");
+      tabela.innerHTML = "";
+
+      const inicio = (paginaAtual - 1) * jogosPorPagina;
+      const fim = inicio + jogosPorPagina;
+      const pagina = historicoFiltrado.slice(inicio, fim);
+
+      pagina.forEach(item => {
+        const dataFormatada = item.data_jogo ? new Date(item.data_jogo).toLocaleDateString("pt-PT") : "—";
+        const tempoFormatado = item.tempo ? `${item.tempo}s` : "—";
+        const nivel = item.nivel || "—";
+        const dicas = String(item.usou_ajuda) === "true" || item.usou_ajuda === true ? "Sim" : "Não";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${dataFormatada}</td>
+          <td>${item.nomeJogo}</td>
+          <td>${nivel}</td>
+          <td>${tempoFormatado}</td>
+          <td>${dicas}</td>
+        `;
+        tabela.appendChild(row);
+      });
+    }
+
+    function renderPaginacao() {
+      const paginacao = document.getElementById("paginacao");
+      paginacao.innerHTML = "";
+
+      const totalPaginas = Math.ceil(historicoFiltrado.length / jogosPorPagina);
+      const mostrarPaginas = [];
+
+      if (totalPaginas <= 3) {
+        for (let i = 1; i <= totalPaginas; i++) mostrarPaginas.push(i);
+      } else {
+        if (paginaAtual > 2) mostrarPaginas.push(1, "...");
+        const inicio = Math.max(1, paginaAtual - 1);
+        const fim = Math.min(totalPaginas, paginaAtual + 1);
+        for (let i = inicio; i <= fim; i++) mostrarPaginas.push(i);
+        if (paginaAtual < totalPaginas - 1) mostrarPaginas.push("...", totalPaginas);
+      }
+
+      mostrarPaginas.forEach(p => {
+        const btn = document.createElement("button");
+        if (p === "...") {
+          btn.textContent = "...";
+          btn.disabled = true;
+        } else {
+          btn.textContent = p;
+          btn.onclick = () => {
+            paginaAtual = p;
+            renderHistorico();
+            renderPaginacao();
+          };
+          if (p === paginaAtual) btn.classList.add("active");
+        }
+        paginacao.appendChild(btn);
+      });
+    }
+
+    function carregarFiltros() {
+      const jogoSet = new Set();
+      const nivelSet = new Set();
+      const dicasSet = new Set();
+
+      historico.forEach(item => {
+        if (item.nomeJogo) jogoSet.add(item.nomeJogo);
+        if (item.nivel) nivelSet.add(item.nivel);
+        const dicasTexto = item.usou_ajuda ? "Sim" : "Não";
+        dicasSet.add(dicasTexto);
+      });
+
+      preencherSelect("filterGame", Array.from(jogoSet));
+      preencherSelect("filterLevel", Array.from(nivelSet));
+      preencherSelect("filterHints", Array.from(dicasSet));
+    }
+
+    function preencherSelect(id, valores) {
+      const select = document.getElementById(id);
+      select.innerHTML = `<option value="">Todos</option>`;
+      valores.forEach(valor => {
+        const option = document.createElement("option");
+        option.value = valor;
+        option.textContent = valor;
+        select.appendChild(option);
+      });
+    }
+
+    function applyFilters() {
+      const data = document.getElementById("filterDate").value;
+      const jogo = document.getElementById("filterGame").value;
+      const nivel = document.getElementById("filterLevel").value;
+      const dicas = document.getElementById("filterHints").value;
+      const tempoMax = document.getElementById("filterTime").value;
+
+      historicoFiltrado = historico.filter(item => {
+        const dataValida = data ? new Date(item.data_jogo).toISOString().split("T")[0] === data : true;
+        const jogoValido = jogo ? item.nomeJogo === jogo : true;
+        const nivelValido = nivel ? item.nivel === nivel : true;
+        const dicasTexto = item.usou_ajuda ? "Sim" : "Não";
+        const dicasValida = dicas ? dicasTexto === dicas : true;
+        const tempoValido = tempoMax && !isNaN(tempoMax)
+          ? parseInt(item.tempo) <= parseInt(tempoMax)
+          : true;
+
+        return dataValida && jogoValido && nivelValido && dicasValida && tempoValido;
+      });
+
+      paginaAtual = 1;
+      renderHistorico();
+      renderPaginacao();
+    }
+
+    function voltar() {
+      window.history.back();
+    }
+
+    inicializar();
+    async function inicializar() {
+      await carregarPaciente();
+      await carregarRelatorio();
+    }
+  </script>
+</body>
+</html>

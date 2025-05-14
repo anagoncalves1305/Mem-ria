@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memória Viva</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f2ff;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .barra-topo, .barra-inferior {
+            background-color: #d9ecff;
+            height: 80px;
+            width: 100%;
+            position: absolute;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .barra-topo {
+            top: 0;
+        }
+
+        .barra-inferior {
+            bottom: 0;
+        }
+
+        .titulo {
+            font-size: 26px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.15);
+            margin: auto;
+            text-align: center;
+            width: 300px;
+        }
+
+        p {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #444;
+        }
+
+        .codigo-input {
+            font-size: 20px;
+            text-align: center;
+            width: 100px;
+            padding: 8px;
+            border: 2px solid #666;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .codigo-input::placeholder {
+            letter-spacing: 2px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .btn {
+            background-color: white;
+            border: 2px solid #666;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #444;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #cce4ff;
+            color: #222;
+        }
+
+        #erro-codigo {
+            color: red;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="barra-topo">
+        <span class="titulo">Memória Viva 🔎</span>
+    </div>
+
+    <div class="container">
+        <p>Introduz o teu código para começar uma nova aventura</p>
+        <input type="text" class="codigo-input" id="codigo" maxlength="4" placeholder="____">
+        <div class="buttons">
+            <button class="btn" id="btn-entrar">Entrar</button>
+            <button class="btn" onclick="window.location.href='login.html'">Voltar</button>
+        </div>
+        <div id="erro-codigo"></div>
+    </div>
+
+    <div class="barra-inferior"></div>
+
+    <script>
+        document.getElementById('btn-entrar').addEventListener('click', function () {
+            const codigo = document.getElementById('codigo').value.trim();
+            const erro = document.getElementById('erro-codigo');
+
+            if (codigo === '') {
+                erro.textContent = "Por favor, insere um código.";
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/codigo?valor=${codigo}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao verificar código.');
+                    }
+                    return response.json();
+                })
+				.then(data => {
+				    console.log("Resposta da API:", data); // Debug
+
+				    if (data.valido && data.idUtente) { // <-- aqui corrigido
+				        localStorage.setItem("codigoAcesso", codigo);
+				        localStorage.setItem("id_utente", data.idUtente); // <-- salva como id_utente se quiser manter consistência
+				        window.location.href = 'jogos.html';
+				    } else {
+				        erro.textContent = "Código inválido. Verifica e tenta novamente.";
+				    }
+				})
+        });
+    </script>
+
+</body>
+</html>

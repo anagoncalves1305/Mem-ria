@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jogo dos Países</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: bold;
+      color: #3e5f76;
+    }
+
+    .painel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .botao {
+      padding: 12px 25px;
+      background: linear-gradient(145deg, #506f86, #3a566b);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    .botao:hover {
+      background: linear-gradient(145deg, #3a566b, #506f86);
+      transform: scale(1.05);
+    }
+
+    .barra {
+      width: 100%;
+      height: 20px;
+      background-color: #e0e0e0;
+      border-radius: 12px;
+      margin-top: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .barra-evolucao {
+      height: 100%;
+      background-color: #506f86;
+      border-radius: 12px;
+      transition: width 0.5s ease;
+    }
+
+    .btn-voltar {
+      background-color: #7aa9d6;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin: 40px 0 20px 20px;
+    }
+
+    .btn-voltar:hover {
+      background-color: #5f8cb7;
+      transform: scale(1.05);
+    }
+
+    .tabuleiro {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .linha {
+      display: flex;
+      gap: 20px;
+    }
+
+    .opcao {
+      flex: 1;
+      background: #bce0fd;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 24px;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s;
+    }
+
+    .opcao img {
+      width: 60px;
+      height: 40px;
+    }
+
+    .opcao:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .opcao.selecionada {
+      background: #fff;
+      border: 2px solid #506f86;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .opcao.associada {
+      background: #90ee90;
+    }
+
+    .opcao.desabilitada {
+      background: #d3d3d3;
+      cursor: not-allowed;
+    }
+
+    .piscar {
+      animation: piscar 1s ease-in-out;
+    }
+
+    @keyframes piscar {
+      0%, 100% { background-color: #ffff99; }
+      50% { background-color: #fff176; }
+    }
+
+    .estrela, #estrelas {
+      color: gold;
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #c29500;
+    }
+
+    .topo-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .estrelas-fixas {
+      background: #fff9c4;
+      padding: 8px 14px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      font-size: 18px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .estrelas-fixas .estrela {
+      color: gold;
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="topo-container">
+      <div class="estrelas-fixas">
+        ⭐ <span id="contador-estrelas">0</span>
+      </div>
+    </div>
+
+    <h1>Jogo dos Países 🌍</h1>
+
+    <div class="painel">
+      <span><span class="estrela" id="estrelas">⭐ 0</span></span>
+      <span>Tempo: <span id="tempo">00:00</span></span>
+    </div>
+
+    <div class="barra">
+      <div class="barra-evolucao" id="barra-evolucao"></div>
+    </div>
+
+    <div class="tabuleiro" id="tabuleiro"></div>
+
+    <div class="painel">
+      <button class="botao" onclick="reiniciarJogo()">Recomeçar 🔄</button>
+      <button class="botao" onclick="dica()">Dica 💡</button>
+    </div>
+  </div>
+  <button class="btn-voltar" onclick="voltar()">Voltar</button>
+
+  <script>
+    const paises = [
+      { nome: "Portugal", imagem: "https://flagcdn.com/w320/pt.png" },
+      { nome: "Brasil", imagem: "https://flagcdn.com/w320/br.png" },
+      { nome: "Espanha", imagem: "https://flagcdn.com/w320/es.png" },
+      { nome: "França", imagem: "https://flagcdn.com/w320/fr.png" },
+      { nome: "Itália", imagem: "https://flagcdn.com/w320/it.png" },
+      { nome: "Alemanha", imagem: "https://flagcdn.com/w320/de.png" },
+      { nome: "Japão", imagem: "https://flagcdn.com/w320/jp.png" },
+      { nome: "Canadá", imagem: "https://flagcdn.com/w320/ca.png" },
+      { nome: "Estados Unidos", imagem: "https://flagcdn.com/w320/us.png" }
+    ];
+
+    let selecionadas = [];
+    let parAcertado = 0;
+	let tempoRestante = 60;
+	let timer;
+    let usouAjuda = 0;
+    let estrelas = 0;
+	let partidaFinalizada = false;
+	let totalDicasUtilizadas = 0;
+
+    function iniciarJogo() {
+      const bandeiras = [...paises];
+      const nomes = [...paises];
+
+      do {
+        bandeiras.sort(() => Math.random() - 0.5);
+        nomes.sort(() => Math.random() - 0.5);
+      } while (bandeiras.some((p, i) => p.nome === nomes[i].nome));
+
+      const tabuleiro = document.getElementById("tabuleiro");
+      tabuleiro.innerHTML = "";
+
+      for (let i = 0; i < paises.length; i++) {
+        const linha = document.createElement("div");
+        linha.classList.add("linha");
+
+        const divImagem = document.createElement("div");
+        divImagem.classList.add("opcao");
+        divImagem.dataset.pais = bandeiras[i].nome;
+        divImagem.onclick = () => selecionar(divImagem, bandeiras[i].nome);
+        const img = document.createElement("img");
+        img.src = bandeiras[i].imagem;
+        img.alt = bandeiras[i].nome;
+        divImagem.appendChild(img);
+
+        const divNome = document.createElement("div");
+        divNome.classList.add("opcao");
+        divNome.textContent = nomes[i].nome;
+        divNome.dataset.pais = nomes[i].nome;
+        divNome.onclick = () => selecionar(divNome, nomes[i].nome);
+
+        linha.appendChild(divImagem);
+        linha.appendChild(divNome);
+        tabuleiro.appendChild(linha);
+      }
+
+      tempoRestante = 60;
+      tempoTotal = 0;
+      parAcertado = 0;
+      usouAjuda = 0;
+      estrelas = 0;
+      selecionadas = [];
+	  partidaFinalizada = false;
+	  totalDicasUtilizadas = 0;
+
+
+      document.getElementById("tempo").innerText = "1:00";
+      document.getElementById("barra-evolucao").style.width = "0%";
+      atualizarEstrelas(0);
+      iniciarCronometro();
+    }
+
+	function iniciarCronometro() {
+	  clearInterval(timer);
+	  tempoRestante = 60; 
+
+	  timer = setInterval(() => {
+	    let minutos = Math.floor(tempoRestante / 60);
+	    let segundos = tempoRestante % 60;
+	    document.getElementById("tempo").innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+
+	    if (tempoRestante <= 0) {
+	      clearInterval(timer);
+	      salvarEFinalizar(); // guarda a partida mesmo que o tempo acabe
+	    }
+
+	    tempoRestante--;
+	    tempoTotal++; // tempoTotal continua a contar para o registo
+	  }, 1000);
+	}
+
+
+    const id_utente = parseInt(localStorage.getItem("id_utente"));
+
+    if (id_utente) {
+      fetch(`http://localhost:8080/api/partidas/utentes/${id_utente}/estrelas`)
+        .then(res => res.json())
+        .then(data => {
+          const estrelas = data.estrelas || 0;
+          document.getElementById("contador-estrelas").innerText = estrelas;
+          localStorage.setItem("estrelas", estrelas);
+        })
+        .catch(err => {
+          console.error("Erro ao buscar estrelas do utente:", err);
+          document.getElementById("contador-estrelas").innerText = "0";
+        });
+    } else {
+      console.warn("ID do utente não está no localStorage.");
+    }
+
+    function selecionar(elemento, nome) {
+      if (selecionadas.length < 2 && !elemento.classList.contains("desabilitada")) {
+        elemento.classList.add("selecionada");
+        selecionadas.push({ elemento, nome });
+        if (selecionadas.length === 2) verificarPar();
+      }
+    }
+
+    function verificarPar() {
+      const [s1, s2] = selecionadas;
+
+      if (s1.nome === s2.nome) {
+        parAcertado++;
+        estrelas = parAcertado;
+        atualizarBarraEvolucao();
+        s1.elemento.classList.add("associada", "desabilitada");
+        s2.elemento.classList.add("associada", "desabilitada");
+        atualizarEstrelas(estrelas);
+
+        if (parAcertado === paises.length) {
+          clearInterval(timer);
+          salvarEFinalizar();
+        }
+      } else {
+        setTimeout(() => {
+          s1.elemento.classList.remove("selecionada");
+          s2.elemento.classList.remove("selecionada");
+        }, 1000);
+      }
+
+      selecionadas = [];
+    }
+
+    function atualizarBarraEvolucao() {
+      let progresso = (parAcertado / paises.length) * 100;
+      document.getElementById("barra-evolucao").style.width = progresso + "%";
+    }
+
+    function atualizarEstrelas(valor) {
+      document.getElementById("estrelas").innerText = `⭐ ${valor}`;
+    }
+
+	function dica() {
+	  let estrelasTotais = parseInt(localStorage.getItem("estrelas")) || 0;
+	  if (estrelasTotais < 3) {
+	    alert("É necessário ter pelo menos 3 estrelas para usar uma dica!");
+	    return;
+	  }
+
+      estrelasTotais -= 3;
+      localStorage.setItem("estrelas", estrelasTotais);
+      document.getElementById("contador-estrelas").innerText = estrelasTotais;
+      usouAjuda = 1;
+	  totalDicasUtilizadas += 3;
+
+
+      const opcoes = document.querySelectorAll(".opcao");
+      for (let pais of paises) {
+        let imgDiv = Array.from(opcoes).find(el => el.dataset.pais === pais.nome && el.querySelector("img") && !el.classList.contains("associada"));
+        let nomeDiv = Array.from(opcoes).find(el => el.dataset.pais === pais.nome && !el.querySelector("img") && !el.classList.contains("associada"));
+        if (imgDiv && nomeDiv) {
+          imgDiv.classList.add("piscar");
+          nomeDiv.classList.add("piscar");
+          setTimeout(() => {
+            imgDiv.classList.remove("piscar");
+            nomeDiv.classList.remove("piscar");
+          }, 1000);
+          break;
+        }
+      }
+    }
+
+    function salvarEFinalizar() {
+      const idUtente = parseInt(localStorage.getItem("id_utente"));
+      const idPartida = parseInt(localStorage.getItem("idPartida"));
+
+      if (!idUtente || !idPartida) {
+        alert("ID do utente ou da partida não encontrado.");
+        return;
+      }
+
+	  const estrelasFinais = estrelas - totalDicasUtilizadas;
+	  const dataAtual = new Date().toISOString();
+
+      const dados = {
+        tempo: tempoRestante,
+        usou_ajuda: usouAjuda > 0,
+        estrelas_ganhas: estrelasFinais,
+		data_jogo: dataAtual  
+
+      };
+
+	  fetch(`http://localhost:8080/api/partidas/${idPartida}`, {
+	    method: "PUT",
+	    headers: { "Content-Type": "application/json" },
+	    body: JSON.stringify(dados)
+	  })
+	    .then(response => {
+	      if (!response.ok) {
+	        return response.text().then(text => { // Agora imprime a resposta do erro
+	          throw new Error("Erro ao fazer PUT na partida: " + text);
+	        });
+	      }
+	      return response.json();
+	    })
+	    .then(() => {
+	      return fetch(`http://localhost:8080/api/partidas/utentes/${idUtente}/estrelas`);
+	    })
+	    .then(response => {
+	      if (!response.ok) {
+	        return response.text().then(text => { // Também imprime a resposta de erro aqui
+	          throw new Error("Erro ao buscar estrelas totais: " + text);
+	        });
+	      }
+	      return response.json();
+	    })
+	    .then(data => {
+	      const totalEstrelas = data.estrelas;
+	      localStorage.setItem("estrelas", totalEstrelas);
+	      document.getElementById("contador-estrelas").innerText = totalEstrelas;
+	      window.location.href = "historico.html";
+	    })
+	    .catch(error => {
+	      console.error("Erro ao finalizar partida:", error);
+	      alert("Erro ao finalizar a partida.");
+	      window.location.href = "historico.html";
+	    });
+
+    }
+
+    function reiniciarJogo() {
+      iniciarJogo();
+    }
+
+    function voltar() {
+      window.location.href = "niveis_pares.html";
+    }
+
+    window.onload = iniciarJogo;
+  </script>
+
+
+</body>
+</html>

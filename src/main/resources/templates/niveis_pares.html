@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memória Viva</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .barra-topo, .barra-inferior {
+      background-color: #d9ecff;
+      height: 80px;
+      width: 100%;
+      position: absolute;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .barra-topo { top: 0; }
+    .barra-inferior { bottom: 0; }
+
+    .titulo {
+      font-size: 26px;
+      font-weight: bold;
+      color: black;
+    }
+
+    .estrelas {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      background-color: #fff3b0;
+      padding: 8px 16px;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .container {
+      width: 80%;
+      margin: auto;
+      padding: 20px;
+      margin-top: 120px;
+    }
+
+    .games {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .game {
+      width: 220px;
+      height: 220px;
+      background-color: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .game:hover {
+      background-color: #cce0f5;
+      transform: scale(1.05);
+    }
+
+    .btn-voltar {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      background-color: #7aa9d6;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-voltar:hover {
+      background-color: #5f8cb7;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<!-- Igual ao niveis_memoria.html, só muda o título e os links -->
+
+<body>
+
+  <div class="barra-topo">
+    <span class="titulo">Jogo dos Pares 🍀</span>
+  </div>
+
+  <div class="estrelas">
+    ⭐ <span id="contador-estrelas">0</span>
+  </div>
+
+  <div class="container">
+    <h2>Escolha o melhor nível e desafie-se!</h2>
+    <div class="games">
+		<a href="nivel1_pares.html" class="game" onclick="atualizarNivel(event, 1)">Nível 1</a>
+		<a href="nivel2_pares.html" class="game" onclick="atualizarNivel(event, 2)">Nível 2</a>
+    </div>
+  </div>
+
+  <div class="barra-inferior">
+    <a href="jogos.html"><button class="btn-voltar">Voltar</button></a>
+  </div>
+
+  <script>
+    // Mostrar contagem de estrelas
+	const id_utente = parseInt(localStorage.getItem("id_utente"));
+
+	if (id_utente) {
+	  fetch(`http://localhost:8080/api/partidas/utentes/${id_utente}/estrelas`)
+	    .then(res => res.json())
+	    .then(data => {
+	      const estrelas = data.estrelas || 0;
+	      document.getElementById("contador-estrelas").innerText = estrelas;
+	    })
+	    .catch(err => {
+	      console.error("Erro ao buscar estrelas do utente:", err);
+	      document.getElementById("contador-estrelas").innerText = "0";
+	    });
+	} else {
+	  console.warn("ID do utente não está no localStorage.");
+	}
+
+    // Função para registar partida (Jogo dos Pares tem id_jogo = 2)
+	function atualizarNivel(event, nivel) {
+		  event.preventDefault(); // Impede o redirecionamento automático
+
+		  const idPartida = localStorage.getItem("idPartida");
+
+		  if (!idPartida) {
+		    alert("Partida não encontrada! Crie a partida primeiro em jogos.html.");
+		    return;
+		  }
+
+		  fetch(`http://localhost:8080/api/partidas/${idPartida}`, {
+		    method: "PUT",
+		    headers: { "Content-Type": "application/json" },
+		    body: JSON.stringify({ nivel: nivel })
+		  })
+		  .then(response => {
+		    if (!response.ok) {
+		      throw new Error("Erro ao atualizar nível da partida");
+		    }
+		    return response.json();
+		  })
+		  .then(data => {
+		    console.log("Nível atualizado com sucesso:", data);
+		    // Redireciona para a página do nível escolhido
+		    window.location.href = `nivel${nivel}_pares.html`;
+		  })
+		  .catch(error => {
+		    console.error("Erro:", error);
+		  });
+		}
+  </script>
+</body>
+</html>

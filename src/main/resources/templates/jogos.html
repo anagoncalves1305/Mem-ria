@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memória Viva</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .barra-topo, .barra-inferior {
+      background-color: #d9ecff;
+      height: 80px;
+      width: 100%;
+      position: absolute;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .barra-topo { top: 0; }
+    .barra-inferior { bottom: 0; }
+
+    .titulo {
+      font-size: 26px;
+      font-weight: bold;
+      color: black;
+    }
+
+    .estrelas {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      background-color: #fff3b0;
+      padding: 8px 16px;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .container {
+      width: 80%;
+      margin: auto;
+      padding: 20px;
+      margin-top: 120px;
+    }
+
+    .games {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .game {
+      width: 220px;
+      height: 220px;
+      background-color: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .game:hover {
+      background-color: #cce0f5;
+      transform: scale(1.05);
+    }
+
+    .btn-voltar {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      background-color: #7aa9d6;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-voltar:hover {
+      background-color: #5f8cb7;
+      transform: scale(1.05);
+    }
+
+    #chatMensagens {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 5px;
+    }
+
+    .mensagem {
+      max-width: 85%;
+      padding: 8px 10px;
+      border-radius: 15px;
+      font-size: 13px;
+      line-height: 1.3;
+      display: inline-block;
+      word-wrap: break-word;
+      white-space: pre-line;
+    }
+
+    .utente {
+      align-self: flex-end;
+      background-color: #cfe8ff;
+      text-align: left;
+    }
+
+    .profissional {
+      align-self: flex-start;
+      background-color: #e9ecef;
+      text-align: left;
+    }
+
+    #mensagemInput,
+    #dataConsulta,
+    #horaConsulta {
+      padding: 6px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid #a9cce8;
+      width: 100%;
+    }
+
+    button {
+      font-size: 13px;
+      padding: 7px 0;
+      margin-top: 6px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="barra-topo">
+    <span class="titulo">Memória Viva 🔍</span>
+  </div>
+
+  <div class="estrelas">
+    ⭐ <span id="contador-estrelas">0</span>
+  </div>
+
+  <div class="container">
+    <h2>Treine a sua memória!</h2>
+    <div class="games">
+      <a href="#" class="game" data-id_jogo="1" data-url="niveis_memoria.html">Jogo da Memória 🧠</a>
+      <a href="#" class="game" data-id_jogo="2" data-url="niveis_pares.html">Jogo dos Pares 🍀</a>
+    </div>
+  </div>
+  <div style="margin-top: 40px;">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSferUrsdSLRj1yG2MzDKiLmkZied8DyYbxyIGihtFtJ7Hvoyw/viewform?usp=dialog" target="_blank">
+      <button style="
+        background-color: #7aa9d6;
+        color: white;
+        padding: 12px 24px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        cursor: pointer;
+      ">
+        📋 Avaliar Aplicação
+      </button>
+    </a>
+  </div>
+
+  <div class="barra-inferior">
+    <a href="inicial.html"><button class="btn-voltar">Voltar</button></a>
+  </div>
+
+  <!-- Botão flutuante do chat -->
+  <button onclick="abrirChat()" style="
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    background-color: #7aa9d6;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 50%;
+    font-size: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    cursor: pointer;
+  " title="Abrir Chat">💬
+    <span id="notificacao-chat" style="
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 12px;
+      height: 12px;
+      background-color: #339af0;
+      border-radius: 50%;
+      display: none;
+      border: 2px solid white;
+    "></span>
+  </button>
+
+  <!-- Modal do chat -->
+  <div id="chatModal" style="
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 280px;
+    background: #f4faff;
+    border: 1.5px solid #b6d4f2;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+    max-height: 80vh;
+    overflow-y: auto;
+  ">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <strong id="chatTitulo" style="font-size: 16px;">Chat com Dr(a).</strong>
+      <span onclick="fecharChat()" style="cursor: pointer; font-weight: bold; font-size: 18px;">&times;</span>
+    </div>
+
+	<div id="chatMensagens" style="
+	  height: 200px;
+	  overflow-y: auto;
+	  background: white;
+	  border: 1px solid #d0e5f5;
+	  padding: 10px;
+	  border-radius: 8px;
+	  font-size: 14px;
+	  margin-bottom: 10px;
+	"></div>
+
+	<!-- Campo da mensagem -->
+	<input type="text" id="mensagemInput" placeholder="Escreve uma mensagem..." style="
+	  width: 100%;
+	  padding: 6px;
+	  border: 1px solid #a9cce8;
+	  border-radius: 6px;
+	  margin-bottom: 8px;
+	">
+
+	<!-- Botões lado a lado -->
+	<div style="display: flex; gap: 6px;">
+	  <button onclick="enviarMensagem()" style="
+	    flex: 1;
+	    background-color: #7aa9d6;
+	    color: white;
+	    border: none;
+	    padding: 8px;
+	    border-radius: 6px;
+	    font-weight: bold;
+	    cursor: pointer;
+	  ">Enviar</button>
+
+	  <button onclick="abrirModalConsultas()" style="
+	    flex: 1;
+	    background-color: #d0e5f5;
+	    color: #333;
+	    border: none;
+	    padding: 8px;
+	    border-radius: 6px;
+	    font-weight: bold;
+	    cursor: pointer;
+	  ">Marcações</button>
+	</div>
+
+	<hr style="margin: 15px 0; border-color: #cde4f7;">
+
+	<!-- Agendar Consulta -->
+	<label for="dataConsulta" style="font-weight: bold; font-size: 14px;">Agendar Consulta:</label>
+	<div style="display: flex; gap: 6px; margin-top: 6px;">
+	  <input type="date" id="dataConsulta" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #a9cce8;">
+	  <input type="time" id="horaConsulta" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #a9cce8;">
+	</div>
+
+	<button onclick="agendarConsulta()" style="
+	  margin-top: 8px;
+	  background-color: #7aa9d6;
+	  color: white;
+	  border: none;
+	  padding: 8px;
+	  width: 100%;
+	  border-radius: 6px;
+	  font-weight: bold;
+	  cursor: pointer;
+	">Agendar</button>
+
+
+	<!-- Modal flutuante com as consultas aceites -->
+	<div id="consultasModal" style="
+	  display: none;
+	  position: fixed;
+	  bottom: 100px;
+	  right: 320px;
+	  width: 260px;
+	  background: #f4faff;
+	  border: 1.5px solid #b6d4f2;
+	  border-radius: 12px;
+	  padding: 10px;
+	  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+	  z-index: 1001;
+	  font-family: Arial, sans-serif;
+	  max-height: 70vh;
+	  overflow-y: auto;
+	">
+	  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+	    <strong style="font-size: 15px;">Marcações</strong>
+	    <span onclick="fecharModalConsultas()" style="cursor: pointer; font-weight: bold; font-size: 18px;">&times;</span>
+	  </div>
+	  <div id="consultasListaDetalhada" style="
+	    font-size: 13px;
+	    text-align: left;
+	    color: #333;
+	    background-color: #ffffff;
+	    padding: 10px;
+	    border-radius: 6px;
+	    border: 1px solid #d0e5f5;
+	  ">A carregar...</div>
+	</div>
+	
+
+
+	<script>
+		localStorage.setItem("tipo_utilizador", "utente");
+		const id_utente = parseInt(localStorage.getItem("id_utente"));
+		const tipo_utilizador = localStorage.getItem("tipo_utilizador");
+		let id_profissional;
+		let nome_profissional = "Profissional";
+
+		if (id_utente) {
+			  fetch(`http://localhost:8080/api/partidas/utentes/${id_utente}/estrelas`)
+			    .then(res => res.json())
+			    .then(data => {
+			      const estrelas = data.estrelas || 0;
+			      document.getElementById("contador-estrelas").innerText = estrelas;
+			    })
+			    .catch(err => {
+			      console.error("Erro ao buscar estrelas do utente:", err);
+			      document.getElementById("contador-estrelas").innerText = "0";
+			    });
+			} else {
+			  console.warn("ID do utente não está no localStorage.");
+			}
+		    document.querySelectorAll('.game').forEach(el => {
+		      el.addEventListener('click', function (e) {
+		        e.preventDefault();
+
+		        const id_jogo = parseInt(this.dataset.id_jogo); // Corrigido!
+		        const urlDestino = this.dataset.url;
+		        const id_utente = parseInt(localStorage.getItem("id_utente"));
+
+		        if (!id_utente || isNaN(id_jogo)) {
+		          alert("Erro: usuário ou jogo inválido.");
+		          return;
+		        }
+
+		        // Preenche com valores mínimos válidos apenas para registrar a escolha
+		        const partidaData = {
+		          id_utente: id_utente,
+		          id_jogo: id_jogo,
+		          nivel: 1,
+		          tempo: 0,
+		          usou_ajuda: false
+		        };
+
+		        fetch("http://localhost:8080/api/partidas", {
+		          method: "POST",
+		          headers: {
+		            "Content-Type": "application/json"
+		          },
+		          body: JSON.stringify(partidaData)
+		        })
+		        .then(async response => {
+		          if (!response.ok) {
+		            const errorText = await response.text();
+		            throw new Error(`Erro ${response.status}: ${errorText}`);
+		          }
+		          return response.json();
+		        })
+		        .then(data => {
+		          localStorage.setItem("idPartida", data.id_partida);
+		          localStorage.setItem("idJogoAtual", id_jogo);
+		          window.location.href = urlDestino;
+		        })
+		        .catch(err => {
+		          console.error("Erro ao iniciar partida:", err);
+		          alert("Não foi possível iniciar a partida. Verifique o console.");
+		        });
+		      });
+		    });
+
+		async function carregarProfissionalDoUtente() {
+			if (!id_utente) return;
+
+			try {
+				const resUtente = await fetch(`http://localhost:8080/api/utentes/${id_utente}`);
+				const utente = await resUtente.json();
+				id_profissional = utente.id_Profissional;
+
+				if (id_profissional) {
+					const resProfissional = await fetch(`http://localhost:8080/api/profissionais/${id_profissional}`);
+					const profissional = await resProfissional.json();
+					nome_profissional = profissional.nome || "Profissional";
+					document.getElementById("chatTitulo").textContent = `Chat com Dr(a). ${nome_profissional}`;
+					localStorage.setItem("nome_profissional", nome_profissional);
+					localStorage.setItem("id_profissional", id_profissional);
+				}
+			} catch (error) {
+				console.error("Erro ao carregar profissional do utente:", error);
+			}
+		}
+
+		function abrirChat() {
+			document.getElementById("chatModal").style.display = "block";
+			const nome_profissional = localStorage.getItem("nome_profissional") || "Profissional";
+			document.getElementById("chatTitulo").textContent = `Chat com Dr(a). ${nome_profissional}`;
+			document.getElementById("notificacao-chat").style.display = "none";
+			fetch(`http://localhost:8080/api/chat/marcar-lidas?utente=${id_utente}&profissional=${id_profissional}&remetente=PROFISSIONAL`, { method: "PUT" });
+			carregarMensagens();
+		}
+
+		function fecharChat() {
+			document.getElementById("chatModal").style.display = "none";
+		}
+
+		async function carregarMensagens() {
+			const res = await fetch(`http://localhost:8080/api/chat?utente=${id_utente}&profissional=${id_profissional}`);
+			const mensagens = await res.json();
+			const chatBox = document.getElementById("chatMensagens");
+			chatBox.innerHTML = "";
+
+			let consultaPendente = null;
+			let indiceUltimaMsgPendente = -1;
+
+			try {
+				const resPendentes = await fetch(`http://localhost:8080/api/consultas/pendentes?utente=${id_utente}`);
+				const pendentes = await resPendentes.json();
+				if (pendentes.length > 0) {
+					consultaPendente = pendentes[pendentes.length - 1];
+				}
+
+				// Encontrar a última mensagem de pedido de consulta pendente
+				for (let i = mensagens.length - 1; i >= 0; i--) {
+					const msg = mensagens[i];
+					if (
+						msg.texto.toLowerCase().includes("pedido de consulta") &&
+						consultaPendente &&
+						(
+							(tipo_utilizador === "profissional" && msg.remetente === "utente") ||
+							(tipo_utilizador === "utente" && msg.remetente === "profissional")
+						)
+					) {
+						indiceUltimaMsgPendente = i;
+						break;
+					}
+				}
+			} catch (e) {
+				console.error("Erro ao verificar consultas pendentes:", e);
+			}
+
+			mensagens.forEach((msg, index) => {
+				const div = document.createElement("div");
+				div.className = `mensagem ${msg.remetente === "utente" ? "utente" : "profissional"}`;
+				div.textContent = msg.texto;
+
+				if (index === indiceUltimaMsgPendente) {
+					const botoes = document.createElement("div");
+					botoes.style.marginTop = "5px";
+					botoes.style.display = "flex";
+					botoes.style.gap = "6px";
+
+					const btnAceitar = document.createElement("button");
+					btnAceitar.textContent = "Aceitar";
+					btnAceitar.style.backgroundColor = "#28a745";
+					btnAceitar.style.color = "white";
+					btnAceitar.style.border = "none";
+					btnAceitar.style.borderRadius = "6px";
+					btnAceitar.style.padding = "4px 8px";
+					btnAceitar.style.cursor = "pointer";
+					btnAceitar.onclick = () => atualizarEstadoConsulta("aceite");
+
+					const btnRecusar = document.createElement("button");
+					btnRecusar.textContent = "Recusar";
+					btnRecusar.style.backgroundColor = "#dc3545";
+					btnRecusar.style.color = "white";
+					btnRecusar.style.border = "none";
+					btnRecusar.style.borderRadius = "6px";
+					btnRecusar.style.padding = "4px 8px";
+					btnRecusar.style.cursor = "pointer";
+					btnRecusar.onclick = () => atualizarEstadoConsulta("recusada");
+
+					botoes.appendChild(btnAceitar);
+					botoes.appendChild(btnRecusar);
+					div.appendChild(document.createElement("br"));
+					div.appendChild(botoes);
+				}
+
+				chatBox.appendChild(div);
+			});
+
+			chatBox.scrollTop = chatBox.scrollHeight;
+		}
+
+		async function atualizarEstadoConsulta(novoEstado) {
+			try {
+				const res = await fetch(`http://localhost:8080/api/consultas/pendentes?utente=${id_utente}`);
+				const pendentes = await res.json();
+
+				if (!pendentes || pendentes.length === 0) {
+					alert("Sem consulta pendente para atualizar.");
+					return;
+				}
+
+				const consulta = pendentes[pendentes.length - 1];
+
+				if (consulta.estado !== "pendente") {
+					alert("Esta consulta já foi tratada.");
+					return;
+				}
+
+				const idConsulta = consulta.id;
+
+				const resAtualizacao = await fetch(`http://localhost:8080/api/consultas/${idConsulta}/estado?estado=${novoEstado}`, {
+					method: "PUT"
+				});
+
+				if (!resAtualizacao.ok) throw new Error("Erro ao atualizar estado da consulta.");
+
+				carregarMensagens();
+			} catch (err) {
+				console.error("Erro ao atualizar estado da consulta:", err);
+				alert("Erro ao atualizar consulta.");
+			}
+		}
+
+		async function enviarMensagem() {
+			const texto = document.getElementById("mensagemInput").value.trim();
+			if (!texto) return;
+			await fetch("http://localhost:8080/api/chat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id_utente, id_profissional, texto, remetente: "utente" })
+			});
+			document.getElementById("mensagemInput").value = "";
+			carregarMensagens();
+		}
+
+		async function agendarConsulta() {
+			const data = document.getElementById("dataConsulta").value;
+			const hora = document.getElementById("horaConsulta").value;
+			if (!data || !hora) return;
+			const dataHora = `${data} ${hora}`;
+			await fetch("http://localhost:8080/api/consultas", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id_utente, id_profissional, data: dataHora, estado: "pendente" })
+			});
+			await fetch("http://localhost:8080/api/chat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ id_utente, id_profissional, texto: `Pedido de consulta para o dia ${data} às ${hora}`, remetente: "utente" })
+			});
+			carregarMensagens();
+		}
+
+		async function abrirModalConsultas() {
+			document.getElementById("consultasModal").style.display = "block";
+			carregarConsultasDetalhadas();
+		}
+
+		function fecharModalConsultas() {
+			document.getElementById("consultasModal").style.display = "none";
+		}
+
+		async function carregarConsultasDetalhadas() {
+			try {
+				const res = await fetch(`http://localhost:8080/api/consultas/proximas?utente=${id_utente}`);
+				const consultas = await res.json();
+				const aceites = consultas.filter(c => c.estado === "aceite");
+				const container = document.getElementById("consultasListaDetalhada");
+				container.innerHTML = aceites.length
+					? aceites.map(c => {
+						const d = new Date(c.data);
+						return `📆 ${d.toLocaleString("pt-PT", { dateStyle: "full", timeStyle: "short" })}<br>`;
+					}).join("")
+					: "<em>Sem consultas aceites.</em>";
+			} catch (err) {
+				document.getElementById("consultasListaDetalhada").innerHTML = "<em>Erro ao carregar.</em>";
+			}
+		}
+
+		async function verificarMensagensNovas() {
+			const res = await fetch(`http://localhost:8080/api/chat/novas?utente=${id_utente}&profissional=${id_profissional}&remetente=PROFISSIONAL`);
+			const data = await res.json();
+			document.getElementById("notificacao-chat").style.display = (data.novas > 0) ? "block" : "none";
+		}
+
+		async function iniciar() {
+			await carregarProfissionalDoUtente();
+
+			if (id_profissional) {
+				setInterval(verificarMensagensNovas, 10000);
+				verificarMensagensNovas();
+			}
+		}
+
+		iniciar();
+	</script>
+
+</body>
+</html>

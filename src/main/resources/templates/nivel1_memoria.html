@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Memória</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3e5f76;
+        }
+        .tabuleiro {
+            display: grid;
+            grid-template-columns: repeat(6, 110px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .carta {
+            width: 110px;
+            height: 110px;
+            background: #bce0fd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s;
+        }
+        .carta.revelada {
+            background: #fff;
+            border: 2px solid #506f86;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .carta:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .painel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .botao {
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #506f86, #3a566b);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease, transform 0.2s;
+        }
+        .botao:hover {
+            background: linear-gradient(145deg, #3a566b, #506f86);
+            transform: scale(1.05);
+        }
+        .destaque {
+            animation: piscar 0.5s alternate infinite;
+        }
+        @keyframes piscar {
+            from { background-color: gold; }
+            to { background-color: white; }
+        }
+        .estrelas {
+            font-size: 28px;
+            font-weight: bold;
+            color: gold;
+        }
+        .barra {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 12px;
+            margin-top: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .barra-evolucao {
+            height: 100%;
+            background-color: #506f86;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+        .barra-evolucao-rapida {
+            background-color: #ffcc00;
+        }
+        /* Botão de Voltar */
+		.btn-voltar {
+			  background-color: #7aa9d6;
+			  color: white;
+			  padding: 12px 25px;
+			  border: none;
+			  font-size: 16px;
+			  font-weight: bold;
+			  cursor: pointer;
+			  border-radius: 8px;
+			  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			  transition: background-color 0.3s ease, transform 0.2s ease;
+			  margin: 40px 0 20px 20px;
+			}
+
+		    .btn-voltar:hover {
+		      background-color: #5f8cb7;
+		      transform: scale(1.05);
+		    }
+
+		    .btn-voltar:active {
+		      transform: scale(0.95);
+		    }
+
+			.topo-container {
+				display: flex;
+				justify-content: flex-end;
+				margin-bottom: 10px;
+				}
+
+			.estrelas-fixas {
+				background: #fff9c4;
+				padding: 8px 14px;
+				border-radius: 10px;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+				font-size: 18px;
+				font-weight: bold;
+				color: #444;
+				}
+
+		    .estrelas-fixas .estrela {
+		      color: gold;
+		      font-size: 22px;
+		    }
+    </style>
+</head>
+<body>
+	
+	<div class="container">
+		<div class="topo-container">
+		  <div class="estrelas-fixas">
+		    ⭐ <span id="contador-estrelas">0</span>
+		  </div>
+		</div>
+        <h1>Jogo da Memória 🧠</h1>
+        <div class="painel">
+			<span> <span class="estrelas" id="estrelas">⭐ 0</span></span>            
+			<span>Tempo: <span id="tempo">00:00</span></span>
+        </div>
+        <div class="barra">
+            <div class="barra-evolucao" id="barra-evolucao"></div>
+        </div>
+        <div class="tabuleiro" id="tabuleiro"></div>
+        <div class="painel">
+            <button class="botao" onclick="reiniciarJogo()">Recomeçar 🔄</button>
+            <button class="botao" onclick="dica()">Dica 💡</button>
+        </div>
+    </div>
+
+    <!-- Botão de Voltar -->
+    <button class="btn-voltar" onclick="voltar()">Voltar</button>
+
+	<script>
+		const emojis = ["🦊", "🦊", "🐰", "🐰", "🐺", "🐺", "🐻", "🐻", "🦁", "🦁", "🐯", "🐯"];
+		let tabuleiro = document.getElementById("tabuleiro");
+		let selecionadas = [];
+		let reveladas = [];
+		let estrelas = 0;
+		let tempoRestante = 0;
+		let tempoTotal = 0;
+		let timer;
+		let parAcertado = 0;
+		let usouAjuda = 0;
+		let bloqueado = false;
+
+		const TEMPO_LIMITE = 180; // 3 minutos
+		const TOTAL_PARES = emojis.length / 2;
+		const idJogo = 1; // Jogo da Memória (emojis)
+		const nivel = parseInt(localStorage.getItem("nivel_selecionado")) || 1;
+
+		function iniciarJogo() {
+		    emojis.sort(() => Math.random() - 0.5);
+		    tabuleiro.innerHTML = "";
+		    emojis.forEach((emoji, index) => {
+		        let carta = document.createElement("div");
+		        carta.classList.add("carta");
+		        carta.dataset.index = index;
+		        carta.textContent = "";
+		        carta.onclick = () => virarCarta(carta, emoji);
+		        tabuleiro.appendChild(carta);
+		    });
+
+		    selecionadas = [];
+		    reveladas = [];
+		    estrelas = 0;
+		    tempoRestante = 0;
+		    tempoTotal = 0;
+		    parAcertado = 0;
+		    usouAjuda = 0;
+			partidaFinalizada = false;
+			totalDicasUtilizadas = 0;
+
+		    document.getElementById("tempo").innerText = "0:00";
+		    document.getElementById("barra-evolucao").style.width = "0%";
+		    document.getElementById("barra-evolucao").classList.remove("barra-evolucao-rapida");
+		    atualizarEstrelas(0);
+			atualizarEstrelasAcumuladas();
+		    iniciarCronometro();
+		}
+
+		function iniciarCronometro() {
+		    clearInterval(timer);
+		    timer = setInterval(() => {
+		        tempoRestante++;
+		        let minutos = Math.floor(tempoRestante / 60);
+		        let segundos = tempoRestante % 60;
+		        document.getElementById("tempo").innerText = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+
+		        if (tempoRestante >= TEMPO_LIMITE) {
+		            clearInterval(timer);
+		            alert("Tempo esgotado!");
+		            estrelas = parAcertado;
+		            salvarEFinalizar();
+		        }
+		    }, 1000);
+		}
+
+		const id_utente = parseInt(localStorage.getItem("id_utente"));
+
+		if (id_utente) {
+		    fetch(`http://localhost:8080/api/partidas/utentes/${id_utente}/estrelas`)
+		        .then(res => res.json())
+		        .then(data => {
+		            const estrelas = data.estrelas || 0;
+		            document.getElementById("contador-estrelas").innerText = estrelas;
+		        })
+		        .catch(err => {
+		            console.error("Erro ao buscar estrelas do utente:", err);
+		            document.getElementById("contador-estrelas").innerText = "0";
+		        });
+		} else {
+		    console.warn("ID do utente não está no localStorage.");
+		}
+
+		function atualizarBarraEvolucao() {
+		    let progresso = (parAcertado / TOTAL_PARES) * 100;
+		    document.getElementById("barra-evolucao").style.width = `${progresso}%`;
+
+		    if (progresso >= 80) {
+		        document.getElementById("barra-evolucao").classList.add("barra-evolucao-rapida");
+		    }
+
+		    estrelas = parAcertado;
+		    atualizarEstrelas(estrelas);
+
+		    if (parAcertado === TOTAL_PARES) {
+		        clearInterval(timer);
+		        setTimeout(() => {
+		            salvarEFinalizar();
+		        }, 500);
+		    }
+		}
+
+		function atualizarEstrelas(valor) {
+		    document.getElementById("estrelas").innerText = `⭐ ${valor}`;
+		}
+
+		function atualizarEstrelasAcumuladas() {
+		      const total = localStorage.getItem("estrelas") || 0;
+		      document.getElementById("contador-estrelas").innerText = total;
+		    }
+			
+			function virarCarta(carta, emoji) {
+			    if (bloqueado || selecionadas.length >= 2 || carta.classList.contains("revelada")) {
+			        return;
+			    }
+
+			    carta.classList.add("revelada");
+			    carta.textContent = emoji;
+			    selecionadas.push({ carta, emoji });
+
+			    if (selecionadas.length === 2) {
+			        bloqueado = true;
+			        setTimeout(verificarPar, 600); // ligeiro delay para evitar cliques rápidos
+			    }
+			}
+
+
+			function verificarPar() {
+			    let [c1, c2] = selecionadas;
+			    if (c1.emoji === c2.emoji) {
+			        reveladas.push(c1.carta, c2.carta);
+			        parAcertado++;
+			        atualizarBarraEvolucao();
+			        bloqueado = false;
+			    } else {
+			        setTimeout(() => {
+			            c1.carta.classList.remove("revelada");
+			            c2.carta.classList.remove("revelada");
+			            c1.carta.textContent = "";
+			            c2.carta.textContent = "";
+			            bloqueado = false;
+			        }, 1000);
+			    }
+
+			    selecionadas = [];
+			}
+
+
+		function dica() {
+		  let estrelasTotais = parseInt(localStorage.getItem("estrelas")) || 0;
+		  if (estrelasTotais < 3) {
+		    alert("É necessário ter pelo menos 3 estrelas para usar uma dica!");
+		    return;
+		  }
+
+		      estrelasTotais -= 3;
+		      localStorage.setItem("estrelas", estrelasTotais);
+		      document.getElementById("contador-estrelas").innerText = estrelasTotais;
+		      usouAjuda = 1;
+		      totalDicasUtilizadas += 3;
+
+		      const cartas = Array.from(document.querySelectorAll(".carta:not(.revelada)"));
+		      let pares = {};
+
+		      cartas.forEach(carta => {
+		        const index = parseInt(carta.dataset.index);
+		        const imagem = emojis[index];
+		        if (!pares[imagem]) pares[imagem] = [];
+		        pares[imagem].push(carta);
+		      });
+
+		      const paresDisponiveis = Object.values(pares).filter(par => par.length >= 2);
+
+		      if (paresDisponiveis.length > 0) {
+		        const parEscolhido = paresDisponiveis[Math.floor(Math.random() * paresDisponiveis.length)];
+
+		        parEscolhido[0].classList.add("destaque");
+		        parEscolhido[1].classList.add("destaque");
+
+		        setTimeout(() => {
+		          parEscolhido[0].classList.remove("destaque");
+		          parEscolhido[1].classList.remove("destaque");
+		        }, 1000);
+		      }
+		    }
+
+		function salvarEFinalizar() {
+		    const idUtente = parseInt(localStorage.getItem("id_utente"));
+		    const idPartida = parseInt(localStorage.getItem("idPartida"));
+
+		    if (!idUtente || !idPartida) {
+		        alert("ID do utente ou da partida não encontrado.");
+		        return;
+		    }
+
+			const estrelasFinais = estrelas - totalDicasUtilizadas;
+			const dataAtual = new Date().toISOString();
+
+			
+		    const dadosAtualizacao = {
+		        tempo: tempoRestante,
+		        usou_ajuda: usouAjuda > 0,
+		        estrelas_ganhas: estrelasFinais,
+				data_jogo: dataAtual  
+
+		    };
+
+		    fetch(`http://localhost:8080/api/partidas/${idPartida}`, {
+		        method: 'PUT',
+		        headers: { 'Content-Type': 'application/json' },
+		        body: JSON.stringify(dadosAtualizacao)
+		    })
+		    .then(response => {
+		        if (!response.ok) throw new Error("Erro ao atualizar a partida");
+		        return response.json();
+		    })
+		    .then(() => {
+		        return fetch(`http://localhost:8080/api/partidas/utentes/${idUtente}/estrelas`);
+		    })
+		    .then(response => {
+		        if (!response.ok) throw new Error("Erro ao buscar estrelas totais");
+		        return response.json();
+		    })
+		    .then(data => {
+		        const totalEstrelas = data.estrelas;
+		        localStorage.setItem("estrelas", totalEstrelas);
+		        document.getElementById("contador-estrelas").innerText = totalEstrelas;
+		        window.location.href = "historico.html";
+		    })
+		    .catch(error => {
+		        console.error("Erro ao finalizar partida:", error);
+		        alert("Erro ao finalizar a partida.");
+		        window.location.href = "historico.html";
+		    });
+		}
+
+		function reiniciarJogo() {
+		    estrelas = 0;
+		    atualizarEstrelas(estrelas);
+		    reveladas = [];
+		    iniciarJogo();
+		}
+
+		function voltar() {
+		    window.location.href = "niveis_memoria.html";
+		}
+
+		iniciarJogo();
+	</script>
+
+</body>
+</html>

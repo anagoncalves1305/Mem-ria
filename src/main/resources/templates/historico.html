@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Jogos</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #d9eaff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #cce0f5;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      margin-top: 40px;
+      width: 90%;
+      max-width: 1000px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: bold;
+      color: black;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: #e6f2ff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #a6c8e6;
+    }
+
+    th {
+      background-color: #72a5d8;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f9ff;
+    }
+
+    .botoes {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .botoes button {
+      background-color: #6caee0;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: 0.2s ease-in-out;
+    }
+
+    .botoes button:hover {
+      background-color: #4a90e2;
+      transform: translateY(-2px);
+    }
+
+    .botoes button:disabled {
+      background-color: #a0c4e8;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .paginacao {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .paginacao button {
+      background-color: #7aa9d6;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 14px;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    .paginacao button:hover {
+      background-color: #4a90e2;
+    }
+
+    .paginacao button.active {
+      background-color: #347fd4;
+      box-shadow: 0 0 0 2px #dceeff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Histórico de Jogos</h2>
+  <table>
+    <thead>
+    <tr>
+      <th>Data</th>
+      <th>Jogo</th>
+      <th>Nível</th>
+      <th>Tempo</th>
+      <th>Dicas</th>
+    </tr>
+    </thead>
+    <tbody id="tabelaHistorico"></tbody>
+  </table>
+
+  <div class="botoes">
+    <button onclick="voltarInicio()">Voltar ao Início</button>
+    <div class="paginacao" id="paginacao"></div>
+    <button onclick="voltarJogos()">Voltar para os Jogos</button>
+  </div>
+</div>
+
+<script>
+  let historico = [];
+  let paciente = {};
+  let paginaAtual = 1;
+  const jogosPorPagina = 20;
+
+  function getIdUtenteFromLocalStorage() {
+    return localStorage.getItem("id_utente");
+  }
+
+  async function carregarPaciente() {
+    const idUtente = getIdUtenteFromLocalStorage();
+    if (!idUtente) {
+      alert("Número de utente não informado.");
+      window.location.href = "inicial.html";
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/utentes/${idUtente}`);
+      if (!response.ok) throw new Error('Erro ao carregar paciente.');
+      paciente = await response.json();
+    } catch (error) {
+      console.error("Erro ao carregar paciente:", error);
+    }
+  }
+
+  async function carregarHistorico() {
+    if (!paciente || !paciente.id) return;
+
+    try {
+      const partidasRes = await fetch("http://localhost:8080/api/partidas");
+      const todasPartidas = await partidasRes.json();
+      const minhasPartidas = todasPartidas.filter(p => p.id_utente === paciente.id);
+
+      const jogosRes = await fetch("http://localhost:8080/api/jogos");
+      const jogos = await jogosRes.json();
+
+      historico = minhasPartidas.map(p => {
+        const jogo = jogos.find(j => j.id_jogo === p.id_jogo);
+        return {
+          data: p.data_jogo,
+          nomeJogo: jogo?.nome_jogo || `Jogo #${p.id_jogo}`,
+          nivel: p.nivel,
+          tempo: p.tempo,
+          usou_ajuda: p.usou_ajuda
+        };
+      });
+
+      historico.sort((a, b) => new Date(b.data) - new Date(a.data));
+      renderHistorico();
+      renderPaginacao();
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+    }
+  }
+
+  function renderHistorico() {
+    const tabela = document.getElementById("tabelaHistorico");
+    tabela.innerHTML = "";
+
+    if (historico.length === 0) {
+      tabela.innerHTML = "<tr><td colspan='5'>Sem histórico de jogos.</td></tr>";
+      return;
+    }
+
+    const inicio = (paginaAtual - 1) * jogosPorPagina;
+    const fim = inicio + jogosPorPagina;
+    const pagina = historico.slice(inicio, fim);
+
+    pagina.forEach(p => {
+      const data = p.data ? new Date(p.data).toLocaleDateString("pt-PT") : "—";
+      const nivel = p.nivel || "—";
+      const tempo = p.tempo ? `${p.tempo}s` : "—";
+      const dicas = p.usou_ajuda ? "Sim" : "Não";
+
+      const linha = document.createElement("tr");
+      linha.innerHTML = `
+        <td>${data}</td>
+        <td>${p.nomeJogo}</td>
+        <td>${nivel}</td>
+        <td>${tempo}</td>
+        <td>${dicas}</td>
+      `;
+      tabela.appendChild(linha);
+    });
+  }
+
+  function renderPaginacao() {
+    const totalPaginas = Math.ceil(historico.length / jogosPorPagina);
+    const paginacaoDiv = document.getElementById("paginacao");
+    paginacaoDiv.innerHTML = "";
+
+    const mostrarPaginas = [];
+
+    if (totalPaginas <= 3) {
+      for (let i = 1; i <= totalPaginas; i++) mostrarPaginas.push(i);
+    } else {
+      if (paginaAtual > 2) mostrarPaginas.push(1, "...");
+      let inicio = Math.max(1, paginaAtual - 1);
+      let fim = Math.min(totalPaginas, paginaAtual + 1);
+      for (let i = inicio; i <= fim; i++) mostrarPaginas.push(i);
+      if (paginaAtual < totalPaginas - 1) mostrarPaginas.push("...", totalPaginas);
+    }
+
+    mostrarPaginas.forEach(p => {
+      const btn = document.createElement("button");
+      if (p === "...") {
+        btn.textContent = "...";
+        btn.disabled = true;
+        btn.style.cursor = "default";
+      } else {
+        btn.textContent = p;
+        btn.onclick = () => {
+          paginaAtual = p;
+          renderHistorico();
+          renderPaginacao();
+        };
+        if (p === paginaAtual) btn.classList.add("active");
+      }
+      paginacaoDiv.appendChild(btn);
+    });
+  }
+
+  function voltarInicio() {
+    window.location.href = "inicial.html";
+  }
+
+  function voltarJogos() {
+    window.location.href = "jogos.html";
+  }
+
+  async function inicializar() {
+    await carregarPaciente();
+    await carregarHistorico();
+  }
+
+  window.onload = inicializar;
+</script>
+
+</body>
+</html>
+

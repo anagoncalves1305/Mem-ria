@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerar Código de Acesso</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #d9ecff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      width: 40%;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: bold;
+      color: black;
+    }
+
+    .info {
+      background-color: #ffffff;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: left;
+      margin: 15px 0;
+      border: 1px solid #ccc;
+    }
+
+    .info p {
+      margin: 5px 0;
+    }
+
+    #codigo {
+      margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #7aa9d6;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #5f8cb7;
+    }
+
+    #btnProximo {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Gerar Código de Acesso</h2>
+
+  <div class="info" id="infoUtente">
+    <p>Carregando informações do utente...</p>
+  </div>
+
+  <button onclick="gerarCodigo()">Gerar Código</button>
+
+  <div id="codigo"></div>
+
+  <button id="btnProximo" onclick="irParaInicial()">Próximo</button>
+</div>
+
+<script>
+  const idUtente = localStorage.getItem("id_utente");
+
+  if (!idUtente) {
+    document.getElementById("infoUtente").innerHTML = "<p>Utente não identificado.</p>";
+  } else {
+    fetch(`http://localhost:8080/api/utentes/${idUtente}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Erro ao obter dados do utente.");
+        return res.json();
+      })
+      .then(data => {
+        const infoDiv = document.getElementById("infoUtente");
+        infoDiv.innerHTML = `
+          <p><strong>Nome:</strong> ${data.nome}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Data de nascimento:</strong> ${data.data_nascimento}</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+        `;
+
+        // Verifica se já tem código
+        fetch(`http://localhost:8080/api/codigo/utente/${idUtente}`)
+          .then(res => {
+            if (!res.ok) throw new Error("Código não encontrado.");
+            return res.json();
+          })
+          .then(codigoData => {
+            if (codigoData && codigoData.codigo) {
+              document.getElementById("codigo").innerText = "Código: " + codigoData.codigo;
+              document.getElementById("btnProximo").style.display = "inline-block";
+
+              const botao = document.querySelector("button[onclick='gerarCodigo()']");
+              botao.disabled = true;
+              botao.innerText = "Já tens um código associado";
+              botao.style.backgroundColor = "#ccc";
+              botao.style.cursor = "not-allowed";
+            }
+          })
+          .catch(err => {
+            console.warn("Código ainda não gerado:", err);
+          });
+      })
+      .catch(err => {
+        document.getElementById("infoUtente").innerHTML = "<p>Erro ao carregar dados do utente.</p>";
+        console.error(err);
+      });
+  }
+
+  function gerarCodigo() {
+    const codigo = Math.floor(1000 + Math.random() * 9000).toString();
+    document.getElementById("codigo").innerText = "Código: " + codigo;
+
+    const idUtente = parseInt(localStorage.getItem("id_utente"));
+    const dados = {
+      codigo: codigo,
+      utente: {
+        id_utente: idUtente
+      }
+    };
+
+    fetch('http://localhost:8080/api/codigo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados)
+    })
+      .then(async res => {
+        if (res.ok) {
+          document.getElementById("btnProximo").style.display = "inline-block";
+        } else {
+          const erro = await res.json().catch(() => ({ mensagem: "Erro desconhecido" }));
+          console.error("Erro no servidor:", erro);
+          alert("Erro ao associar código: " + (erro.detalhes || erro.mensagem || res.status));
+        }
+      })
+      .catch(err => {
+        console.error("Erro:", err);
+        alert("Erro de rede ou servidor.");
+      });
+  }
+
+  function irParaInicial() {
+    window.location.href = "inicial.html";
+  }
+</script>
+</body>
+</html>

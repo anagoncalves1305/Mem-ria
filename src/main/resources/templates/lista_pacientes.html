@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Selecione o Paciente</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #d9ecff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      width: 60%;
+      max-width: 800px;
+      text-align: center;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input[type="text"], select {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      min-width: 120px;
+    }
+
+	.lista-pacientes {
+	  background: white;
+	  padding: 10px;
+	  height: 300px; /* FORÇA altura fixa */
+	  overflow-y: auto;
+	  border-radius: 5px;
+	  text-align: left;
+	  border: 1px solid #ccc;
+	  margin-bottom: 20px;
+	}
+
+    .profissional {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .profissional .info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      flex: 1;
+    }
+
+    button {
+      padding: 8px 15px;
+      border: none;
+      background-color: #7aa9d6;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #5f8cb7;
+    }
+
+    .botoes-finais {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .notificacao {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 10px;
+      height: 10px;
+      background: #339af0;
+      border-radius: 50%;
+      border: 1px solid white;
+      display: none;
+    }
+
+    .btn-chat {
+      position: relative;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Selecione o Paciente</h2>
+
+    <div class="filters">
+      <input type="text" id="search" placeholder="Pesquise por nome ou número de utente" onkeyup="filterPacientes()" />
+      <select id="sortOrder" onchange="sortPacientes()">
+        <option value="asc">Ordenar A-Z</option>
+        <option value="desc">Ordenar Z-A</option>
+      </select>
+    </div>
+
+    <div class="lista-pacientes" id="listaPacientes"></div>
+
+    <div class="botoes-finais">
+      <button onclick="voltar()">Voltar</button>
+      <button id="verRelatorio" onclick="verRelatorio()" disabled>Ver Relatório</button>
+    </div>
+  </div>
+
+  <!-- Modal único de chat -->
+  <div id="chatModal" style="
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 280px;
+    background: #f4faff;
+    border: 1.5px solid #b6d4f2;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    z-index: 1000;
+    font-family: Arial, sans-serif;
+    max-height: 80vh;
+    overflow-y: auto;
+  ">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <strong id="chatTitulo" style="font-size: 16px;">Chat com Dr(a).</strong>
+      <span onclick="fecharChat()" style="cursor: pointer; font-weight: bold; font-size: 18px;">&times;</span>
+    </div>
+
+    <div id="chatMensagens" style="
+      height: 200px;
+      overflow-y: auto;
+      background: white;
+      border: 1px solid #d0e5f5;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    "></div>
+
+    <input type="text" id="mensagemInput" placeholder="Escreve uma mensagem..." style="
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #a9cce8;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    ">
+
+    <div style="display: flex; gap: 6px;">
+      <button onclick="enviarMensagem()" style="flex: 1;">Enviar</button>
+      <button onclick="abrirModalConsultas()" style="flex: 1; background-color: #d0e5f5; color: #333;">Marcações</button>
+    </div>
+
+    <hr style="margin: 15px 0; border-color: #cde4f7;">
+
+    <label for="dataConsulta" style="font-weight: bold; font-size: 14px;">Agendar Consulta:</label>
+    <div style="display: flex; gap: 6px; margin-top: 6px;">
+      <input type="date" id="dataConsulta" style="flex: 1;">
+      <input type="time" id="horaConsulta" style="flex: 1;">
+    </div>
+
+    <button onclick="agendarConsulta()" style="margin-top: 8px; width: 100%;">Agendar</button>
+
+    <div id="consultasModal" style="
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      right: 320px;
+      width: 260px;
+      background: #f4faff;
+      border: 1.5px solid #b6d4f2;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      z-index: 1001;
+      font-family: Arial, sans-serif;
+      max-height: 70vh;
+      overflow-y: auto;
+    ">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong style="font-size: 15px;">Marcações</strong>
+        <span onclick="fecharModalConsultas()" style="cursor: pointer; font-weight: bold; font-size: 18px;">&times;</span>
+      </div>
+      <div id="consultasListaDetalhada" style="font-size: 13px;">A carregar...</div>
+    </div>
+  </div>
+
+  <script>
+    let utentes = [];
+    let chatAbertoId = null;
+    let chatAbertoNome = "";
+    let notificacoesPendentes = {};
+
+    async function carregarPacientes() {
+      const idProfissional = localStorage.getItem("id_profissional");
+      const res = await fetch(`http://localhost:8080/api/utentes?id_profissional=${idProfissional}`);
+      utentes = await res.json();
+    }
+
+    function renderPacientes(lista) {
+      const container = document.getElementById("listaPacientes");
+      container.innerHTML = "";
+
+      lista.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "profissional";
+
+        div.innerHTML = `
+          <input type="radio" name="paciente" value="${p.numero_utente}" onclick="habilitarBotao()">
+          <div class="info">
+            <strong>${p.nome}</strong>
+            Nº Utente: ${p.numero_utente}
+          </div>
+          <div class="btn-chat">
+            <button type="button" onclick="abrirChat('${p.nome}', ${p.id_utente})">
+              💬
+            </button>
+            <span id="notificacao-${p.id_utente}" class="notificacao"></span>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    async function verificarMensagensNovas() {
+      const id_profissional = localStorage.getItem("id_profissional");
+
+      for (const utente of utentes) {
+        const res = await fetch(`http://localhost:8080/api/chat/novas?utente=${utente.id_utente}&profissional=${id_profissional}&remetente=UTENTE`);
+        const data = await res.json();
+        const temNova = data.novas > 0;
+
+        notificacoesPendentes[utente.id_utente] = temNova;
+
+        const bolinha = document.getElementById(`notificacao-${utente.id_utente}`);
+        if (bolinha) {
+          bolinha.style.display = temNova ? "block" : "none";
+        }
+      }
+    }
+
+    async function abrirChat(nome, id_utente) {
+      chatAbertoId = id_utente;
+      chatAbertoNome = nome;
+
+      notificacoesPendentes[id_utente] = false;
+      const bolinha = document.getElementById(`notificacao-${id_utente}`);
+      if (bolinha) bolinha.style.display = "none";
+
+      document.getElementById("chatTitulo").textContent = `Chat com ${nome}`;
+      document.getElementById("mensagemInput").value = "";
+      document.getElementById("chatMensagens").innerHTML = "<em>A carregar...</em>";
+      document.getElementById("chatModal").style.display = "block";
+
+      await fetch(`http://localhost:8080/api/chat/marcar-lidas?utente=${id_utente}&profissional=${localStorage.getItem("id_profissional")}&remetente=UTENTE`, {
+        method: "PUT"
+      });
+
+      carregarMensagensProfissional();
+    }
+
+    function fecharChat() {
+      document.getElementById("chatModal").style.display = "none";
+    }
+
+	async function carregarMensagensProfissional() {
+	  const id_profissional = localStorage.getItem("id_profissional");
+	  const res = await fetch(`http://localhost:8080/api/chat?utente=${chatAbertoId}&profissional=${id_profissional}`);
+	  const mensagens = await res.json();
+	  const container = document.getElementById("chatMensagens");
+	  container.innerHTML = "";
+
+	  const consultaPendente = await buscarUltimaConsultaPendente(chatAbertoId);
+
+	  let dia = "", hora = "";
+	  if (consultaPendente) {
+	    const dataConsulta = new Date(consultaPendente.data);
+	    dia = dataConsulta.toISOString().split("T")[0];
+	    hora = dataConsulta.toTimeString().slice(0, 5);
+	  }
+
+	  mensagens.forEach(msg => {
+	    const div = document.createElement("div");
+	    const isProf = msg.remetente === "profissional";
+	    const isConfirmacao = msg.texto.includes("consulta") && msg.texto.includes("foi aceite");
+
+	    const wrapper = document.createElement("div");
+	    wrapper.style.display = "flex";
+	    wrapper.style.justifyContent = isProf ? "flex-end" : "flex-start";
+
+	    div.classList.add(isConfirmacao ? "confirmacao" : "normal");
+		div.innerHTML = isConfirmacao ? msg.texto.startsWith("✅") ? msg.texto : `✅ ${msg.texto}` : msg.texto;
+
+	    // Aplica estilos visuais
+	    div.style.backgroundColor = isProf ? "#cfe8ff" : "#e9ecef";
+	    div.style.color = "#000";
+	    div.style.padding = "8px 10px";
+	    div.style.borderRadius = "12px";
+	    div.style.marginBottom = "6px";
+	    div.style.display = "inline-block";
+	    div.style.maxWidth = "80%";
+	    div.style.fontSize = "14px";
+	    div.style.lineHeight = "1.4";
+	    div.style.wordBreak = "break-word";
+	    div.style.whiteSpace = "pre-wrap";
+	    div.style.alignSelf = isProf ? "flex-end" : "flex-start";
+
+	    // Verifica se deve mostrar botões
+	    const mostrarBotoes =
+	      consultaPendente &&
+	      consultaPendente.estado === "pendente" &&
+	      msg.remetente === "utente" &&
+	      msg.texto.toLowerCase().includes("pedido de consulta") &&
+	      msg.texto.includes(dia) &&
+	      msg.texto.includes(hora);
+
+	    if (mostrarBotoes) {
+	      const botoes = document.createElement("div");
+	      botoes.style.marginTop = "5px";
+	      botoes.style.display = "flex";
+	      botoes.style.gap = "6px";
+
+	      const btnAceitar = document.createElement("button");
+	      btnAceitar.textContent = "Aceitar";
+	      btnAceitar.style.backgroundColor = "#28a745";
+	      btnAceitar.style.color = "white";
+	      btnAceitar.style.border = "none";
+	      btnAceitar.style.borderRadius = "6px";
+	      btnAceitar.style.padding = "4px 8px";
+	      btnAceitar.style.cursor = "pointer";
+	      btnAceitar.onclick = () => atualizarEstadoConsulta(consultaPendente.id, "aceite");
+
+	      const btnRecusar = document.createElement("button");
+	      btnRecusar.textContent = "Recusar";
+	      btnRecusar.style.backgroundColor = "#dc3545";
+	      btnRecusar.style.color = "white";
+	      btnRecusar.style.border = "none";
+	      btnRecusar.style.borderRadius = "6px";
+	      btnRecusar.style.padding = "4px 8px";
+	      btnRecusar.style.cursor = "pointer";
+	      btnRecusar.onclick = () => atualizarEstadoConsulta(consultaPendente.id, "recusada");
+
+	      botoes.appendChild(btnAceitar);
+	      botoes.appendChild(btnRecusar);
+	      div.appendChild(document.createElement("br"));
+	      div.appendChild(botoes);
+	    }
+
+	    wrapper.appendChild(div);
+	    container.appendChild(wrapper);
+	  });
+
+	  container.scrollTop = container.scrollHeight;
+	}
+
+
+
+
+    async function buscarUltimaConsultaPendente(idUtente) {
+      const res = await fetch(`http://localhost:8080/api/consultas/pendentes?utente=${idUtente}`);
+      const consultas = await res.json();
+
+      const pendentes = consultas.filter(c => c.estado === "pendente");
+      if (pendentes.length > 0) {
+        pendentes.sort((a, b) => new Date(b.data) - new Date(a.data));
+        return pendentes[0];
+      }
+      return null;
+    }
+
+    async function atualizarEstadoConsulta(idConsulta, estado) {
+      const res = await fetch(`http://localhost:8080/api/consultas/${idConsulta}/estado?estado=${estado}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (res.ok) {
+        carregarMensagensProfissional();
+      } else {
+        const errorData = await res.json();
+        console.error('Erro ao atualizar o estado da consulta:', errorData);
+      }
+    }
+
+    async function enviarMensagem() {
+      const id_profissional = localStorage.getItem("id_profissional");
+      const texto = document.getElementById("mensagemInput").value.trim();
+      if (!texto) return;
+      await fetch("http://localhost:8080/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_utente: chatAbertoId, id_profissional, texto, remetente: "profissional" })
+      });
+      document.getElementById("mensagemInput").value = "";
+      carregarMensagensProfissional();
+    }
+
+    async function agendarConsulta() {
+      const data = document.getElementById("dataConsulta").value;
+      const hora = document.getElementById("horaConsulta").value;
+      const id_profissional = localStorage.getItem("id_profissional");
+      if (!data || !hora) return;
+      const dataHora = `${data} ${hora}`;
+      await fetch("http://localhost:8080/api/consultas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_utente: chatAbertoId, id_profissional, data: dataHora, estado: "pendente" })
+      });
+      await fetch("http://localhost:8080/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_utente: chatAbertoId, id_profissional, texto: `Pedido de consulta para ${data} às ${hora}`, remetente: "profissional" })
+      });
+      carregarMensagensProfissional();
+    }
+
+    function abrirModalConsultas() {
+      document.getElementById("consultasModal").style.display = "block";
+      carregarConsultasDetalhadas();
+    }
+
+    function fecharModalConsultas() {
+      document.getElementById("consultasModal").style.display = "none";
+    }
+
+    async function carregarConsultasDetalhadas() {
+      const res = await fetch(`http://localhost:8080/api/consultas/proximas?utente=${chatAbertoId}`);
+      const consultas = await res.json();
+      const aceites = consultas.filter(c => c.estado === "aceite");
+      const container = document.getElementById("consultasListaDetalhada");
+      container.innerHTML = aceites.length
+        ? aceites.map(c => {
+          const d = new Date(c.data);
+          return `📆 ${d.toLocaleString("pt-PT", { dateStyle: "full", timeStyle: "short" })}<br>`;
+        }).join("")
+        : "<em>Sem consultas aceites.</em>";
+    }
+
+    function voltar() {
+      window.location.href = "login.html";
+    }
+	
+	function habilitarBotao() {
+	            document.getElementById("verRelatorio").disabled = false;
+	        }
+
+	        function verRelatorio() {
+	            const selecionado = document.querySelector('input[name="paciente"]:checked');
+	            if (selecionado) {
+	                const numero_utente = selecionado.value;
+	                window.location.href = `relatorios.html?utente=${numero_utente}`;
+	            }
+	        }
+
+    carregarPacientes().then(() => {
+      renderPacientes(utentes);
+      verificarMensagensNovas();
+      setInterval(verificarMensagensNovas, 10000);
+    });
+  </script>
+
+
+</body>
+</html>

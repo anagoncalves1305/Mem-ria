@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+    }
+
+    .registo-container {
+      background-color: #d9ecff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+
+    h1, h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"] {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 0.3rem;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .radio-group {
+      text-align: left;
+      margin: 1rem 0;
+    }
+
+    .radio-group label {
+      margin-right: 1rem;
+      font-weight: normal;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 1.2rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #007BFF;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .voltar-btn {
+      margin-top: 1rem;
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: #fff;
+      border: 1px solid #007BFF;
+      border-radius: 4px;
+      color: #007BFF;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .erro {
+      color: red;
+      font-size: 0.9rem;
+      margin: 0;
+      text-align: left;
+    }
+
+    .password-container {
+      position: relative;
+    }
+
+    .password-container input {
+      padding-right: 2.5rem;
+    }
+
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      opacity: 0.6;
+      width: 20px;
+      height: 20px;
+    }
+
+    .toggle-password:hover {
+      opacity: 1;
+    }
+  </style>
+
+  <script>
+    function atualizarCampos() {
+      const tipo = document.querySelector('input[name="tipo"]:checked').value;
+      const utenteField = document.getElementById('utente-field');
+      const especialidadeField = document.getElementById('especialidade-field');
+      const localidadeField = document.getElementById('localidade-field');
+      const cedulaField = document.getElementById('cedula-field');
+
+      if (tipo === 'profissional') {
+        utenteField.style.display = 'none';
+        especialidadeField.style.display = 'block';
+        localidadeField.style.display = 'block';
+        cedulaField.style.display = 'block';
+      } else {
+        utenteField.style.display = 'block';
+        especialidadeField.style.display = 'none';
+        localidadeField.style.display = 'none';
+        cedulaField.style.display = 'none';
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="registo-container">
+    <h1>🔍 Memória Viva</h1>
+    <h2>Registo</h2>
+
+    <form id="registoForm">
+      <div class="radio-group">
+        <label><input type="radio" name="tipo" value="profissional" onclick="atualizarCampos()"> Profissional de saúde</label>
+        <label><input type="radio" name="tipo" value="utente" checked onclick="atualizarCampos()"> Utente</label>
+      </div>
+
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" required>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="password">Password:</label>
+      <div class="password-container">
+        <input type="password" id="password" name="password" required>
+        <svg id="togglePassword" class="toggle-password" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 
+                4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+      </div>
+      <p id="erro-password" class="erro"></p>
+
+      <label for="data_nascimento">Data de Nascimento:</label>
+      <input type="date" id="data_nascimento" name="data_nascimento" required>
+
+      <div id="utente-field">
+        <label for="utente">Número de Utente:</label>
+        <input type="text" id="utente" name="utente" maxlength="9">
+      </div>
+
+      <div id="especialidade-field" style="display: none;">
+        <label for="especialidade">Especialidade:</label>
+        <input type="text" id="especialidade" name="especialidade">
+      </div>
+
+      <div id="localidade-field" style="display: none;">
+        <label for="localidade">Localidade:</label>
+        <input type="text" id="localidade" name="localidade">
+      </div>
+
+      <div id="cedula-field" style="display: none;">
+        <label for="cedula">Número de Cédula:</label>
+        <input type="text" id="cedula" name="cedula">
+      </div>
+
+      <label for="contacto">Contacto:</label>
+      <input type="text" id="contacto" name="contacto" maxlength="9">
+
+      <button type="submit">Registar</button>
+    </form>
+
+    <a href="login.html" class="voltar-btn">Voltar</a>
+  </main>
+
+  <script>
+    document.getElementById('registoForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const tipo = document.querySelector('input[name="tipo"]:checked').value;
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const data_nascimento = document.getElementById('data_nascimento').value;
+      const contacto = document.getElementById('contacto').value;
+      const utente = document.getElementById('utente').value;
+      const especialidade = document.getElementById('especialidade').value;
+      const localidade = document.getElementById('localidade').value;
+      const cedula = document.getElementById('cedula').value;
+
+      const erroPassword = document.getElementById('erro-password');
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+      if (!passwordRegex.test(password)) {
+        erroPassword.textContent = "A password deve ter pelo menos 8 caracteres, uma maiúscula, uma minúscula, um número e um símbolo.";
+        return;
+      } else {
+        erroPassword.textContent = "";
+      }
+
+      let url = '';
+      let dados = {};
+
+      if (tipo === 'profissional') {
+        url = 'http://localhost:8080/api/profissionais';
+        dados = {
+          nome,
+          email,
+          password,
+          data_nascimento,
+          contacto,
+          especialidade,
+          localidade,
+          numeroCedula: cedula
+        };
+      } else {
+        url = 'http://localhost:8080/api/utentes';
+        dados = {
+          nome,
+          email,
+          password,
+          data_nascimento,
+          contacto,
+          numero_utente: utente,
+          id_profissional: null,
+          status: "pendente"
+        };
+      }
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = 'login.html';
+        } else if (response.status === 409) {
+          alert('O email já se encontra registado. Por favor, utilize outro.');
+        } else {
+          return response.text().then(text => { throw new Error(text); });
+        }
+      })
+      .catch(error => {
+        console.error('Erro no registo:', error);
+        erroPassword.textContent = "Erro ao registar. Verifica os dados e tenta novamente.";
+      });
+    });
+
+    // Mostrar/ocultar password
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+    });
+  </script>
+</body>
+</html>
+

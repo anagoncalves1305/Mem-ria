@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Selecione o Seu Profissional de Saúde</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #d9ecff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      width: 50%;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: bold;
+      color: black;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    select {
+      width: 48%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .lista-profissionais {
+      background: white;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      border-radius: 5px;
+      text-align: left;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .profissional {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .profissional input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    .profissional .info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 8px 15px;
+      border: none;
+      background-color: #7aa9d6;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background-color: #5f8cb7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Selecione o Seu Profissional de Saúde</h2>
+
+    <div class="filters">
+      <input
+        type="text"
+        id="search"
+        placeholder="Pesquise por nome, localização ou especialidade"
+        onkeyup="filterProfissionais()"
+      />
+      <select id="sortOrder" onchange="sortProfissionais()">
+        <option value="asc">Ordenar A-Z</option>
+        <option value="desc">Ordenar Z-A</option>
+      </select>
+    </div>
+
+    <div class="lista-profissionais">
+      <form id="formProfissionais">
+        <div id="profissionais"></div>
+      </form>
+    </div>
+
+    <button onclick="selecionarProfissional()">Associar Profissional</button>
+    <button onclick="voltar()">Voltar</button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const id_utente = localStorage.getItem("id_utente");
+      const listaContainer = document.getElementById("profissionais");
+
+      if (!id_utente || id_utente === "undefined") {
+        alert("Erro: utente não autenticado.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Primeiro, busca os dados do utente
+      fetch(`http://localhost:8080/api/utentes/${id_utente}`)
+        .then((res) => res.json())
+        .then((utente) => {
+          const temProfissional = utente.id_profissional !== null;
+          const temCodigo = utente.codigo_acesso !== null && utente.codigo_acesso !== "";
+
+          if (temProfissional) {
+            const resposta = confirm("Já tens um profissional associado. Tens a certeza que queres trocar de profissional?");
+            if (!resposta) {
+              if (temCodigo) {
+                window.location.href = "inicial.html";
+              }
+              // Caso não tenha código, apenas permanece na página.
+              return;
+            }
+            // Se quiser trocar, continua na página e carrega a lista
+            carregarProfissionais();
+          } else if (temCodigo) {
+            // Se não tiver profissional mas já tiver código, vai para a página inicial
+            window.location.href = "inicial.html";
+          } else {
+            // Se não tiver nem profissional nem código, continua normalmente
+            carregarProfissionais();
+          }
+        })
+        .catch((err) => {
+          console.error("Erro ao verificar dados do utente:", err);
+          alert("Erro ao carregar os dados do utente.");
+        });
+
+      function carregarProfissionais() {
+        fetch("http://localhost:8080/api/profissionais")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.length === 0) {
+              listaContainer.innerHTML = "<p>Não há profissionais disponíveis no momento.</p>";
+              return;
+            }
+
+            listaContainer.innerHTML = "";
+            data.forEach((prof) => {
+              const div = document.createElement("div");
+              div.className = "profissional";
+              div.innerHTML = `
+                <label style="display: flex; align-items: center; width: 100%; cursor: pointer;">
+                  <input type="radio" name="profissional" value="${prof.id_Profissional}" />
+                  <div class="info">
+                    <strong>${prof.nome}</strong><br />
+                    Especialidade: ${prof.especialidade}<br />
+                    Localidade: ${prof.localidade}
+                  </div>
+                </label>
+              `;
+              listaContainer.appendChild(div);
+            });
+          })
+          .catch((error) => {
+            console.error("Erro ao carregar profissionais:", error);
+            listaContainer.innerHTML = "<p>Erro ao carregar profissionais. Tente novamente mais tarde.</p>";
+          });
+      }
+
+      window.selecionarProfissional = () => {
+        const selecionado = document.querySelector('input[name="profissional"]:checked');
+        if (selecionado) {
+          const id_profissional = selecionado.value;
+
+          fetch(`http://localhost:8080/api/utentes/associar?idUtente=${id_utente}&idProfissional=${id_profissional}`, {
+            method: "PUT",
+          })
+            .then((response) => {
+              if (response.ok) {
+                window.location.href = "codigo.html";
+              } else {
+                alert("Erro ao associar profissional.");
+              }
+            })
+            .catch((error) => {
+              console.error("Erro ao associar profissional:", error);
+              alert("Erro ao associar o profissional.");
+            });
+        } else {
+          alert("Por favor, seleciona um profissional.");
+        }
+      };
+
+      window.voltar = () => {
+        window.location.href = "login.html";
+      };
+
+      window.filterProfissionais = () => {
+        const searchValue = document.getElementById("search").value.toLowerCase();
+        const profissionaisDivs = document.querySelectorAll(".profissional");
+
+        profissionaisDivs.forEach((div) => {
+          const texto = div.innerText.toLowerCase();
+          div.style.display = texto.includes(searchValue) ? "flex" : "none";
+        });
+      };
+
+      window.sortProfissionais = () => {
+        const order = document.getElementById("sortOrder").value;
+        const container = document.getElementById("profissionais");
+        const items = Array.from(container.children);
+
+        items.sort((a, b) => {
+          const nomeA = a.querySelector(".info strong").innerText;
+          const nomeB = b.querySelector(".info strong").innerText;
+          return order === "asc" ? nomeA.localeCompare(nomeB) : nomeB.localeCompare(nomeA);
+        });
+
+        items.forEach((item) => container.appendChild(item));
+      };
+    });
+  </script>
+</body>
+</html>
