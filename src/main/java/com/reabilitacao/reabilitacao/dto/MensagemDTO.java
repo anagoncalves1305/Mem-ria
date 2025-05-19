@@ -6,7 +6,6 @@ public class MensagemDTO {
     private String texto;
     private String remetente;
 
-    // Getters e Setters
 
     public int getId_utente() { return id_utente; }
     public void setId_utente(int id_utente) { this.id_utente = id_utente; }

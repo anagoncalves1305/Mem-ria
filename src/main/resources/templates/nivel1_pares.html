@@ -111,8 +111,8 @@
       border-radius: 8px;
       text-align: center;
       cursor: pointer;
-      font-size: 36px;
-      min-height: 60px;
+      font-size: 24px;
+      min-height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -182,6 +182,12 @@
       color: gold;
       font-size: 22px;
     }
+	.linha-horizontal {
+	  display: flex;
+	  justify-content: center;
+	  gap: 20px;
+	  margin-top: 20px;
+	}
   </style>
 </head>
 <body>
@@ -227,51 +233,57 @@
     let timer;
     let usouAjuda = 0;
     let estrelas = 0;
-    let totalDicasUtilizadas = 0; // Declaração da variável
+    let totalDicasUtilizadas = 0; 
 
-    function iniciarJogo() {
-      const emojis = [...animais];
-      const nomes = [...animais];
+	function iniciarJogo() {
+	  const emojis = [...animais];
+	  const nomes = [...animais];
 
-      do {
-        emojis.sort(() => Math.random() - 0.5);
-        nomes.sort(() => Math.random() - 0.5);
-      } while (emojis.some((a, i) => a.nome === nomes[i].nome));
+	  do {
+	    emojis.sort(() => Math.random() - 0.5);
+	    nomes.sort(() => Math.random() - 0.5);
+	  } while (emojis.some((a, i) => a.nome === nomes[i].nome));
 
-      const tabuleiro = document.getElementById("tabuleiro");
-      tabuleiro.innerHTML = "";
+	  const tabuleiro = document.getElementById("tabuleiro");
+	  tabuleiro.innerHTML = "";
 
-      for (let i = 0; i < animais.length; i++) {
-        const linha = document.createElement("div");
-        linha.classList.add("linha");
+	  const linhaEmojis = document.createElement("div");
+	  linhaEmojis.classList.add("linha-horizontal");
 
-        const divEmoji = document.createElement("div");
-        divEmoji.classList.add("opcao");
-        divEmoji.textContent = emojis[i].emoji;
-        divEmoji.dataset.animal = emojis[i].nome;
-        divEmoji.onclick = () => selecionar(divEmoji, emojis[i].nome);
+	  const linhaNomes = document.createElement("div");
+	  linhaNomes.classList.add("linha-horizontal");
 
-        const divNome = document.createElement("div");
-        divNome.classList.add("opcao");
-        divNome.textContent = nomes[i].nome;
-        divNome.dataset.animal = nomes[i].nome;
-        divNome.onclick = () => selecionar(divNome, nomes[i].nome);
+	  for (let i = 0; i < animais.length; i++) {
+	    const divEmoji = document.createElement("div");
+	    divEmoji.classList.add("opcao");
+	    divEmoji.textContent = emojis[i].emoji;
+	    divEmoji.dataset.animal = emojis[i].nome;
+	    divEmoji.onclick = () => selecionar(divEmoji, emojis[i].nome);
 
-        linha.appendChild(divEmoji);
-        linha.appendChild(divNome);
-        tabuleiro.appendChild(linha);
-      }
+	    const divNome = document.createElement("div");
+	    divNome.classList.add("opcao");
+	    divNome.textContent = nomes[i].nome;
+	    divNome.dataset.animal = nomes[i].nome;
+	    divNome.onclick = () => selecionar(divNome, nomes[i].nome);
 
-      tempoRestante = 0;
-      tempoTotal = 0;
-      parAcertado = 0;
-      usouAjuda = 0;
-      estrelas = 0;
-      selecionadas = [];
+	    linhaEmojis.appendChild(divEmoji);
+	    linhaNomes.appendChild(divNome);
+	  }
 
-      document.getElementById("tempo").innerText = "0:00";
-      document.getElementById("barra-evolucao").style.width = "0%";
-      document.getElementById("estrelas").innerText = "⭐ 0";
+	  tabuleiro.appendChild(linhaEmojis);
+	  tabuleiro.appendChild(linhaNomes);
+
+	  tempoRestante = 0;
+	  tempoTotal = 0;
+	  parAcertado = 0;
+	  usouAjuda = 0;
+	  estrelas = 0;
+	  selecionadas = [];
+
+	  document.getElementById("tempo").innerText = "0:00";
+	  document.getElementById("barra-evolucao").style.width = "0%";
+	  document.getElementById("estrelas").innerText = "⭐ 0";
+
 	  const idUtente = localStorage.getItem("id_utente");
 
 	  if (idUtente) {
@@ -289,9 +301,10 @@
 	        console.error("Erro ao carregar estrelas:", err);
 	      });
 	  }
-     
+
 	  iniciarCronometro();
-   }
+	}
+
     
     function iniciarCronometro() {
       clearInterval(timer);
@@ -319,7 +332,7 @@
     function verificarPar() {
       const [s1, s2] = selecionadas;
 
-      if (s1.nome === s2.nome) {
+	  if (s1.nome === s2.nome && s1.elemento !== s2.elemento) {
         parAcertado++;
         estrelas = parAcertado;
         atualizarBarraEvolucao();
@@ -363,7 +376,7 @@
       localStorage.setItem("estrelas", estrelasTotais);
       document.getElementById("contador-estrelas").innerText = estrelasTotais;
       usouAjuda = 1;
-      totalDicasUtilizadas += 3; // Corrigido para usar a variável correta
+      totalDicasUtilizadas += 3; 
 
       const cartas = Array.from(document.querySelectorAll(".opcao:not(.selecionada)"));
       let pares = {};

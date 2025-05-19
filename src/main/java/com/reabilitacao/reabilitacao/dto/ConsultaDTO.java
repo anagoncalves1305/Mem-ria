@@ -3,7 +3,7 @@ package com.reabilitacao.reabilitacao.dto;
 public class ConsultaDTO {
     private int id_utente;
     private int id_profissional;
-    private String data; // vem como string (ex: "2025-04-12 15:00")
+    private String data; 
     private String estado;
 
     // Getters e Setters

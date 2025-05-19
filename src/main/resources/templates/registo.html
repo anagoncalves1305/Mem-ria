@@ -127,7 +127,6 @@
       const utenteField = document.getElementById('utente-field');
       const especialidadeField = document.getElementById('especialidade-field');
       const localidadeField = document.getElementById('localidade-field');
-      const cedulaField = document.getElementById('cedula-field');
 
       if (tipo === 'profissional') {
         utenteField.style.display = 'none';
@@ -192,11 +191,6 @@
         <input type="text" id="localidade" name="localidade">
       </div>
 
-      <div id="cedula-field" style="display: none;">
-        <label for="cedula">Número de Cédula:</label>
-        <input type="text" id="cedula" name="cedula">
-      </div>
-
       <label for="contacto">Contacto:</label>
       <input type="text" id="contacto" name="contacto" maxlength="9">
 
@@ -219,7 +213,6 @@
       const utente = document.getElementById('utente').value;
       const especialidade = document.getElementById('especialidade').value;
       const localidade = document.getElementById('localidade').value;
-      const cedula = document.getElementById('cedula').value;
 
       const erroPassword = document.getElementById('erro-password');
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
@@ -244,7 +237,6 @@
           contacto,
           especialidade,
           localidade,
-          numeroCedula: cedula
         };
       } else {
         url = 'http://localhost:8080/api/utentes';
@@ -280,7 +272,6 @@
       });
     });
 
-    // Mostrar/ocultar password
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
     togglePassword.addEventListener('click', () => {

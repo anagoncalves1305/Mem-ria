@@ -17,7 +17,6 @@ public class RelatorioDTO {
         this.usouAjuda = usouAjuda;
     }
 
-    // Getters
     public LocalDateTime getData() { return data; }
     public String getJogo() { return jogo; }
     public Integer getNivel() { return nivel; }

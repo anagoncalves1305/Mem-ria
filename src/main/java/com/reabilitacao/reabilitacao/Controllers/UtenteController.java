@@ -1,6 +1,7 @@
 package com.reabilitacao.reabilitacao.Controllers;
 
 import com.reabilitacao.reabilitacao.models.Utente;
+import com.reabilitacao.reabilitacao.service.EmailService;
 import com.reabilitacao.reabilitacao.service.UtenteService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
 
 @Controller
@@ -18,14 +20,30 @@ public class UtenteController {
 
     @Autowired
     private UtenteService utenteService;
+    
+    @Autowired
+    private EmailService emailService;
 
-    // Criar novo utente
     @PostMapping
     @ResponseBody
-    public ResponseEntity<Utente> criarUtente(@RequestBody Utente utente) {
+    public ResponseEntity<?> criarUtente(@RequestBody Utente utente) {
+        String token = UUID.randomUUID().toString();
+        utente.setTokenValidacao(token);
+        utente.setEmailVerificado(false);
+
         Utente novo = utenteService.salvarUtente(utente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novo);
+
+        try {
+            emailService.enviarEmailConfirmacao(novo.getEmail(), token);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro ao enviar email de confirmação."));
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("mensagem", "Utente criado com sucesso. Confirma o email antes de iniciar sessão."));
     }
+
 
     // Listar todos os utentes
     @GetMapping

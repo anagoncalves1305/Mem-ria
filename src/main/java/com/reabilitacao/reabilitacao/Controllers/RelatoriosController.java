@@ -35,7 +35,7 @@ public class RelatoriosController {
         return ResponseEntity.ok(lista);
     }
 
-    // Buscar relatório por ID
+    // Procurar relatório por ID
     @GetMapping("/{id}")
     @ResponseBody
     public ResponseEntity<?> obterRelatorios(@PathVariable Long id) {
@@ -48,10 +48,10 @@ public class RelatoriosController {
         }
     }
 
-    // 🔥 Buscar todos os relatórios por ID do utente
+    // Procurar todos os relatórios por ID do utente
     @GetMapping("/utente/{idUtente}")
     @ResponseBody
-    public ResponseEntity<List<Relatorios>> relatoriosPorUtente(@PathVariable Long id_utente) {
+    public ResponseEntity<List<Relatorios>> relatoriosPorUtente(@PathVariable Integer id_utente) {
         List<Relatorios> relatorios = relatoriosService.buscarPorUtente(id_utente);
         return ResponseEntity.ok(relatorios);
     }

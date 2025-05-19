@@ -1,10 +1,10 @@
 package com.reabilitacao.reabilitacao.models;
 
 import jakarta.persistence.*;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,11 +54,6 @@ public class Profissionais {
     @Column(nullable = false)
     private String especialidade;
 
-    @NotBlank(message = "O número da cédula é obrigatório")
-    @Size(min = 4, max = 10, message = "O número da cédula deve ter entre 4 e 10 dígitos")
-    @Pattern(regexp = "\\d{4,10}", message = "A cédula deve conter apenas números")
-    @Column(nullable = false, unique = true)
-    private String numeroCedula;
 
     @Column(nullable = true)
     private boolean emailVerificado;
@@ -66,7 +61,6 @@ public class Profissionais {
     @Column(nullable = true)
     private String tokenValidacao;
 
-    // Getters personalizados
     public Integer getId() {
         return id_profissional;
     }
@@ -93,7 +87,6 @@ public class Profissionais {
                 "id=" + id_profissional +
                 ", nome='" + nome + '\'' +
                 ", email='" + email + '\'' +
-                ", numeroCedula='" + numeroCedula + '\'' +
                 '}';
     }
 }

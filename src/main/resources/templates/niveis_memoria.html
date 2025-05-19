@@ -127,7 +127,6 @@
   </div>
 
   <script>
-    // Mostrar contagem de estrelas
 	const id_utente = parseInt(localStorage.getItem("id_utente"));
 
 	if (id_utente) {
@@ -169,7 +168,6 @@
 	  })
 	  .then(data => {
 	    console.log("Nível atualizado com sucesso:", data);
-	    // Redireciona para a página do nível escolhido
 	    window.location.href = `nivel${nivel}_memoria.html`;
 	  })
 	  .catch(error => {

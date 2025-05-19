@@ -28,8 +28,8 @@ public class RelatoriosService {
         return relatoriosRepository.findById(id);
     }
 
-	public List<Relatorios> buscarPorUtente(Long id_utente) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public List<Relatorios> buscarPorUtente(Integer id_utente) {
+        return relatoriosRepository.buscarPorIdUtente(id_utente);
+    }
+
 }

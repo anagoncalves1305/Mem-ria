@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recuperar Password - Memória Viva</title>
+  <style>
+    body {
+      background-color: #e6f2ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      background-color: #d9ecff;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      width: 370px;
+      text-align: center;
+    }
+
+    .container h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .container h2 {
+      font-size: 1.1rem;
+      color: #444;
+      font-weight: normal;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+      color: #333;
+      margin-top: 1.2rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 0.8rem;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-top: 2rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .mensagem {
+      margin-top: 15px;
+      font-size: 14px;
+      color: green;
+      font-weight: bold;
+    }
+
+    .voltar-link {
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: #007bff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .voltar-link:hover {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🔍 <span>Memória Viva</span></h1>
+    <h2>Recuperar Password</h2>
+
+    <label for="tipo">Tipo de utilizador:</label>
+    <select id="tipo">
+      <option value="utente">Utente</option>
+      <option value="profissional">Profissional</option>
+    </select>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+
+    <button class="button" onclick="enviarToken()">Enviar</button>
+    <div id="mensagem" class="mensagem"></div>
+
+    <button class="voltar-link" onclick="window.location.href='login.html'">Voltar</button>
+  </div>
+
+  <script>
+    function enviarToken() {
+      const email = document.getElementById("email").value;
+
+      if (!email.trim()) {
+        document.getElementById("mensagem").textContent = "Preenche o email.";
+        return;
+      }
+
+      fetch("http://localhost:8080/enviar-token-alterar-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ email })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById("mensagem").textContent = "📧 Email enviado com sucesso!";
+      })
+      .catch(() => {
+        document.getElementById("mensagem").textContent = "Erro ao enviar email.";
+      });
+    }
+  </script>
+
+</body>
+</html>

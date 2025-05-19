@@ -9,11 +9,11 @@ public class PageController {
 
     @GetMapping("/")
     public String index() {
-        return "inicial"; // Página principal do site
+        return "inicial"; 
     }
 
     @GetMapping("/{pagina}")
     public String carregarPagina(@PathVariable String pagina) {
-        return pagina; // Assume que o ficheiro existe em templates/
+        return pagina; 
     }
 }

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Histórico de Jogos</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Histórico de Jogos</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -122,37 +123,113 @@
       background-color: #347fd4;
       box-shadow: 0 0 0 2px #dceeff;
     }
+	#graficoModal {
+	    display: none;
+	    position: fixed;
+	    top: 0;
+	    left: 0;
+	    width: 100%;
+	    height: 100%;
+	    background: rgba(0, 0, 0, 0.7);
+	    z-index: 1000;
+	    justify-content: center;
+	    align-items: center;
+	  }
+
+	  #graficoModal .modal-conteudo {
+	    background: white;
+	    padding: 30px;
+	    border-radius: 12px;
+	    position: relative;
+	    max-width: 90%;
+	    width: 1000px;
+	    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+	  }
+
+	  #graficoModal button.fechar {
+	    position: absolute;
+	    top: 10px;
+	    right: 10px;
+	    background: #7aa9d6;
+	    color: white;
+	    border: none;
+	    border-radius: 6px;
+	    padding: 6px 12px;
+	    font-weight: bold;
+	    cursor: pointer;
+	  }
+
+	  .modal-filtros {
+	    display: flex;
+	    flex-wrap: wrap;
+	    gap: 10px;
+	    margin-bottom: 20px;
+	    margin-top: 10px;
+	  }
+
+	  .modal-filtros select,
+	  .modal-filtros input {
+	    padding: 6px;
+	    font-size: 14px;
+	    border-radius: 6px;
+	    border: 1px solid #ccc;
+	  }
+	  #graficoModalCanvas {
+	        width: 100% !important;
+	        height: 400px !important;
+	      }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Histórico de Jogos</h2>
-  <table>
-    <thead>
-    <tr>
-      <th>Data</th>
-      <th>Jogo</th>
-      <th>Nível</th>
-      <th>Tempo</th>
-      <th>Dicas</th>
-    </tr>
-    </thead>
-    <tbody id="tabelaHistorico"></tbody>
-  </table>
+	<div class="container">
+	  <h2>Histórico de Jogos</h2>
+	  <table>
+	    <thead>
+	    <tr>
+	      <th>Data</th>
+	      <th>Jogo</th>
+	      <th>Nível</th>
+	      <th>Tempo</th>
+	      <th>Dicas</th>
+	    </tr>
+	    </thead>
+	    <tbody id="tabelaHistorico"></tbody>
+	  </table>
 
-  <div class="botoes">
-    <button onclick="voltarInicio()">Voltar ao Início</button>
-    <div class="paginacao" id="paginacao"></div>
-    <button onclick="voltarJogos()">Voltar para os Jogos</button>
-  </div>
-</div>
+	  <div class="botoes">
+	    <button onclick="voltarInicio()">Voltar ao Início</button>
+	    <div class="paginacao" id="paginacao"></div>
+	    <button onclick="voltarJogos()">Voltar para os Jogos</button>
+	    <button onclick="abrirModal()">Ver Gráfico</button>
+	  </div>
+	</div>
+
+	<div id="graficoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000;">
+	  <div style="background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 1000px; position: relative;">
+	    <button onclick="fecharModal()" style="position: absolute; top: 10px; right: 10px; background: #7aa9d6; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-weight: bold; cursor: pointer;">Fechar</button>
+	    <h3>Desempenho do Utente</h3>
+	    <div class="modal-filtros" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+	      <input type="date" id="modalFilterStart" />
+	      <input type="date" id="modalFilterEnd" />
+	      <select id="modalFilterJogo"></select>
+	      <select id="modalFilterNivel"></select>
+	      <select id="modalFilterDicas">
+	        <option value="">Dicas</option>
+	        <option value="Sim">Sim</option>
+	        <option value="Não">Não</option>
+	      </select>
+	      <button onclick="renderGraficoModal()" style="background-color: #6caee0; color: white; border: none; padding: 8px 20px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">Filtrar</button>
+	    </div>
+	    <canvas id="graficoModalCanvas"></canvas>
+	  </div>
+	</div>
 
 <script>
   let historico = [];
   let paciente = {};
   let paginaAtual = 1;
-  const jogosPorPagina = 20;
+  const jogosPorPagina = 10;
 
   function getIdUtenteFromLocalStorage() {
     return localStorage.getItem("id_utente");
@@ -221,7 +298,7 @@
     pagina.forEach(p => {
       const data = p.data ? new Date(p.data).toLocaleDateString("pt-PT") : "—";
       const nivel = p.nivel || "—";
-      const tempo = p.tempo ? `${p.tempo}s` : "—";
+	  const tempo = p.tempo != null ? `${Math.abs(p.tempo)}s` : "—";
       const dicas = p.usou_ajuda ? "Sim" : "Não";
 
       const linha = document.createElement("tr");
@@ -286,6 +363,104 @@
   }
 
   window.onload = inicializar;
+  
+  function abrirModal() {
+      document.getElementById("graficoModal").style.display = "flex";
+      preencherFiltrosModal();
+      setTimeout(renderGraficoModal, 100);
+    }
+
+    function fecharModal() {
+      document.getElementById("graficoModal").style.display = "none";
+      if (window.modalChart) window.modalChart.destroy();
+    }
+
+    function preencherFiltrosModal() {
+      const jogoSelect = document.getElementById("modalFilterJogo");
+      const nivelSelect = document.getElementById("modalFilterNivel");
+      const jogos = [...new Set(historico.map(h => h.nomeJogo))];
+      const niveis = [...new Set(historico.map(h => h.nivel))];
+
+      jogoSelect.innerHTML = '<option value="">Jogo</option>';
+      jogos.forEach(j => {
+        const opt = document.createElement('option');
+        opt.value = j;
+        opt.textContent = j;
+        jogoSelect.appendChild(opt);
+      });
+
+      nivelSelect.innerHTML = '<option value="">Nível</option>';
+      niveis.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n;
+        opt.textContent = `N${n}`;
+        nivelSelect.appendChild(opt);
+      });
+    }
+
+    function renderGraficoModal() {
+      const canvas = document.getElementById("graficoModalCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const inicio = new Date(document.getElementById("modalFilterStart").value);
+      const fim = new Date(document.getElementById("modalFilterEnd").value);
+      const jogo = document.getElementById("modalFilterJogo").value;
+      const nivel = document.getElementById("modalFilterNivel").value;
+      const dicas = document.getElementById("modalFilterDicas").value;
+
+      const dados = historico.filter(p => {
+        const data = new Date(p.data);
+        const validaData = (!isNaN(inicio) ? data >= inicio : true) && (!isNaN(fim) ? data <= fim : true);
+        const validaJogo = jogo ? p.nomeJogo === jogo : true;
+        const validaNivel = nivel ? p.nivel.toString() === nivel : true;
+        const validaDicas = dicas ? (p.usou_ajuda ? "Sim" : "Não") === dicas : true;
+        return validaData && validaJogo && validaNivel && validaDicas;
+      });
+
+      const labels = dados.map(p => `${p.nomeJogo} N${p.nivel}`);
+      const tempos = dados.map(p => Math.abs(p.tempo));
+      const cores = dados.map(p => p.usou_ajuda ? "#ff6384" : "#36a2eb");
+
+      if (window.modalChart) window.modalChart.destroy();
+      window.modalChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Tempo por Jogo (s)",
+            data: tempos,
+            backgroundColor: cores,
+            borderRadius: 6,
+            barThickness: 'flex',
+            categoryPercentage: 0.8,
+            barPercentage: 0.8
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: "Desempenho do Utente" }
+          },
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Tempo (s)" }
+            },
+            x: {
+              ticks: {
+                callback: function(value, index, values) {
+                  return this.getLabelForValue(value).replace('Jogo dos ', '').replace('Jogo da ', '').replace('Memória', 'Mem').replace('Pares', 'Pares');
+                },
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          }
+        }
+      });
+    }
 </script>
 
 </body>

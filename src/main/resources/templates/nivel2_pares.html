@@ -14,7 +14,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1200px;
       margin: auto;
       background: white;
       padding: 30px;
@@ -100,25 +100,31 @@
       gap: 20px;
     }
 
-    .opcao {
-      flex: 1;
-      background: #bce0fd;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      font-size: 24px;
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s;
-    }
+	.opcao {
+	  background: #bce0fd;
+	  width: 95px;
+	  height: 70px;
+	  padding: 6px;
+	  border-radius: 8px;
+	  cursor: pointer;
+	  font-size: 13px;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s;
+	  text-align: center;
+	  line-height: 1.2;
+	  word-break: break-word;
+	  white-space: normal;
+	}
 
-    .opcao img {
-      width: 60px;
-      height: 40px;
-    }
+	.opcao img {
+	  width: 60px;
+	  height: 35px;
+	  object-fit: contain;
+	}
+
+
 
     .opcao:hover {
       transform: scale(1.05);
@@ -176,6 +182,14 @@
       color: gold;
       font-size: 22px;
     }
+	.linha-horizontal {
+	  display: grid;
+	  grid-template-columns: repeat(9, 1fr);
+	  justify-items: center;
+	  gap: 15px;
+	  margin-top: 20px;
+	}
+
   </style>
 </head>
 <body>
@@ -241,29 +255,34 @@
       const tabuleiro = document.getElementById("tabuleiro");
       tabuleiro.innerHTML = "";
 
-      for (let i = 0; i < paises.length; i++) {
-        const linha = document.createElement("div");
-        linha.classList.add("linha");
+      const linhaBandeiras = document.createElement("div");
+	  linhaBandeiras.classList.add("linha-horizontal");
 
-        const divImagem = document.createElement("div");
-        divImagem.classList.add("opcao");
-        divImagem.dataset.pais = bandeiras[i].nome;
-        divImagem.onclick = () => selecionar(divImagem, bandeiras[i].nome);
-        const img = document.createElement("img");
-        img.src = bandeiras[i].imagem;
-        img.alt = bandeiras[i].nome;
-        divImagem.appendChild(img);
+	  const linhaNomes = document.createElement("div");
+	  linhaNomes.classList.add("linha-horizontal");
 
-        const divNome = document.createElement("div");
-        divNome.classList.add("opcao");
-        divNome.textContent = nomes[i].nome;
-        divNome.dataset.pais = nomes[i].nome;
-        divNome.onclick = () => selecionar(divNome, nomes[i].nome);
+	  for (let i = 0; i < paises.length; i++) {
+	    const divImagem = document.createElement("div");
+	    divImagem.classList.add("opcao");
+	    divImagem.dataset.pais = bandeiras[i].nome;
+	    divImagem.onclick = () => selecionar(divImagem, bandeiras[i].nome);
+	    const img = document.createElement("img");
+	    img.src = bandeiras[i].imagem;
+	    img.alt = bandeiras[i].nome;
+	    divImagem.appendChild(img);
+	    linhaBandeiras.appendChild(divImagem);
 
-        linha.appendChild(divImagem);
-        linha.appendChild(divNome);
-        tabuleiro.appendChild(linha);
-      }
+	    const divNome = document.createElement("div");
+	    divNome.classList.add("opcao");
+	    divNome.textContent = nomes[i].nome;
+	    divNome.dataset.pais = nomes[i].nome;
+	    divNome.onclick = () => selecionar(divNome, nomes[i].nome);
+	    linhaNomes.appendChild(divNome);
+	  }
+
+	  tabuleiro.appendChild(linhaBandeiras);
+	  tabuleiro.appendChild(linhaNomes);
+
 
       tempoRestante = 60;
       tempoTotal = 0;
@@ -292,11 +311,11 @@
 
 	    if (tempoRestante <= 0) {
 	      clearInterval(timer);
-	      salvarEFinalizar(); // guarda a partida mesmo que o tempo acabe
+	      salvarEFinalizar();
 	    }
 
 	    tempoRestante--;
-	    tempoTotal++; // tempoTotal continua a contar para o registo
+	    tempoTotal++; 
 	  }, 1000);
 	}
 
@@ -330,7 +349,7 @@
     function verificarPar() {
       const [s1, s2] = selecionadas;
 
-      if (s1.nome === s2.nome) {
+	  if (s1.nome === s2.nome && s1.elemento !== s2.elemento) {
         parAcertado++;
         estrelas = parAcertado;
         atualizarBarraEvolucao();
@@ -404,7 +423,7 @@
 	  const dataAtual = new Date().toISOString();
 
       const dados = {
-        tempo: tempoRestante,
+		tempo: tempoTotal <= 0 ? 60 : tempoTotal,
         usou_ajuda: usouAjuda > 0,
         estrelas_ganhas: estrelasFinais,
 		data_jogo: dataAtual  
@@ -418,7 +437,7 @@
 	  })
 	    .then(response => {
 	      if (!response.ok) {
-	        return response.text().then(text => { // Agora imprime a resposta do erro
+	        return response.text().then(text => { 
 	          throw new Error("Erro ao fazer PUT na partida: " + text);
 	        });
 	      }
@@ -429,7 +448,7 @@
 	    })
 	    .then(response => {
 	      if (!response.ok) {
-	        return response.text().then(text => { // Também imprime a resposta de erro aqui
+	        return response.text().then(text => { 
 	          throw new Error("Erro ao buscar estrelas totais: " + text);
 	        });
 	      }

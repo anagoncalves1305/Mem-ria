@@ -172,7 +172,6 @@
         </div>
     </div>
 
-    <!-- Botão de Voltar -->
     <button class="btn-voltar" onclick="voltar()">Voltar</button>
 
 	<script>
@@ -188,9 +187,9 @@
 		let usouAjuda = 0;
 		let bloqueado = false;
 
-		const TEMPO_LIMITE = 180; // 3 minutos
+		const TEMPO_LIMITE = 180; 
 		const TOTAL_PARES = emojis.length / 2;
-		const idJogo = 1; // Jogo da Memória (emojis)
+		const idJogo = 1; 
 		const nivel = parseInt(localStorage.getItem("nivel_selecionado")) || 1;
 
 		function iniciarJogo() {
@@ -296,7 +295,7 @@
 
 			    if (selecionadas.length === 2) {
 			        bloqueado = true;
-			        setTimeout(verificarPar, 600); // ligeiro delay para evitar cliques rápidos
+			        setTimeout(verificarPar, 600); 
 			    }
 			}
 

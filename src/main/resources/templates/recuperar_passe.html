@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nova Password - Memória Viva</title>
+  <style>
+    body {
+      background-color: #e6f2ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      background-color: #d9ecff;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      width: 370px;
+      text-align: center;
+    }
+
+    .container h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .container h2 {
+      font-size: 1.1rem;
+      color: #444;
+      font-weight: normal;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+      color: #333;
+      margin-top: 1.2rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .button {
+      background-color: #007bff;
+      color: white;
+      padding: 0.8rem;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-top: 2rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .mensagem {
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .erro {
+      color: red;
+    }
+
+    .sucesso {
+      color: green;
+    }
+
+    .voltar-link {
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: #007bff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .voltar-link:hover {
+      text-decoration: none;
+    }
+
+    .password-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      opacity: 0.6;
+      width: 20px;
+      height: 20px;
+    }
+
+    .toggle-password:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🔍 <span>Memória Viva</span></h1>
+    <h2>Definir Nova Password</h2>
+
+    <label for="nova1">Nova Password:</label>
+    <div class="password-container">
+      <input type="password" id="nova1" placeholder="Mínimo 8 caracteres..." />
+      <svg id="togglePassword1" class="toggle-password" xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 
+                 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    </div>
+
+    <label for="nova2">Confirmar Password:</label>
+    <div class="password-container">
+      <input type="password" id="nova2" />
+      <svg id="togglePassword2" class="toggle-password" xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 
+                 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    </div>
+
+    <button class="button" onclick="atualizar()">Atualizar Password</button>
+
+    <div id="mensagem" class="mensagem"></div>
+
+    <button class="voltar-link" onclick="window.location.href='login.html'">Voltar</button>
+  </div>
+
+  <script>
+    function atualizar() {
+      const nova1 = document.getElementById("nova1").value;
+      const nova2 = document.getElementById("nova2").value;
+      const token = new URLSearchParams(window.location.search).get("token");
+
+      const mensagem = document.getElementById("mensagem");
+      mensagem.className = "mensagem";
+
+      if (!nova1 || !nova2) {
+        mensagem.textContent = "Preenche ambos os campos.";
+        mensagem.classList.add("erro");
+        return;
+      }
+
+      if (nova1 !== nova2) {
+        mensagem.textContent = "As passwords não coincidem.";
+        mensagem.classList.add("erro");
+        return;
+      }
+
+      const regex = /^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/;
+      if (!regex.test(nova1)) {
+        mensagem.textContent = "Password deve ter no mínimo 8 caracteres, incluindo letra, número e símbolo.";
+        mensagem.classList.add("erro");
+        return;
+      }
+
+      fetch("http://localhost:8080/confirmar-token-alteracao", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ token, novaPassword: nova1 })
+      })
+      .then(r => r.text())
+      .then(res => {
+        mensagem.textContent = res;
+        mensagem.classList.add("sucesso");
+      })
+      .catch(() => {
+        mensagem.textContent = "Erro ao atualizar a password.";
+        mensagem.classList.add("erro");
+      });
+    }
+
+    const togglePassword1 = document.getElementById('togglePassword1');
+    const nova1Input = document.getElementById('nova1');
+    togglePassword1.addEventListener('click', function () {
+      const type = nova1Input.getAttribute('type') === 'password' ? 'text' : 'password';
+      nova1Input.setAttribute('type', type);
+    });
+
+    const togglePassword2 = document.getElementById('togglePassword2');
+    const nova2Input = document.getElementById('nova2');
+    togglePassword2.addEventListener('click', function () {
+      const type = nova2Input.getAttribute('type') === 'password' ? 'text' : 'password';
+      nova2Input.setAttribute('type', type);
+    });
+  </script>
+
+</body>
+</html>

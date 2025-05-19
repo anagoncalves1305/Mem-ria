@@ -4,160 +4,253 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Relatório do Paciente</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #e6f2ff;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-    }
+	body {
+	  font-family: Arial, sans-serif;
+	  background-color: #e4f0ff;
+	  margin: 0;
+	  padding: 0;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  min-height: 100vh;
+	}
 
-    .container {
-      background: #d9ecff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-      width: 80%;
-      margin-top: 20px;
-      text-align: center;
-    }
+	.container {
+	  background: #e6f2ff;
+	  padding: 30px;
+	  border-radius: 12px;
+	  width: 90%;
+	  max-width: 1300px;
+	  margin-top: 20px;
+	  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+	}
 
-    .patient-info {
-      background: #b3d9ff;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    }
+	.top-section {
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: stretch;
+	  gap: 30px;
+	  flex-wrap: nowrap;
+	}
 
-    .patient-info h3 {
-      margin: 0;
-      padding-bottom: 10px;
-    }
+	.patient-info,
+	.grafico-wrapper {
+	  flex: 1;
+	  min-width: 0;
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: space-between;
+	  border-radius: 12px;
+	  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+	}
 
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
+	.patient-info {
+	  background: #cce5ff;
+	  padding: 20px 30px;
+	}
 
-    .filters select,
-    .filters input {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin: 5px;
-      width: 200px;
-    }
+	.patient-info p span {
+	  font-weight: bold;
+	}
+	
+	.patient-info p {
+	  margin: 4px 0;
+	}
 
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
+	.grafico-wrapper {
+	  background: white;
+	  padding: 20px 30px;
+	}
 
-    table,
-    th,
-    td {
-      border: 1px solid #ddd;
-    }
+	.patient-info h3,
+	.grafico-wrapper h3 {
+	  margin: 0 0 15px 0;
+	  font-size: 1.2rem;
+	}
 
-    th,
-    td {
-      padding: 10px;
-      text-align: center;
-    }
+	.grafico-wrapper canvas {
+	  width: 100% !important;
+	  max-height: 150px !important;
+	}
 
-    th {
-      background-color: #7aa9d6;
-      color: white;
-    }
+	.filters {
+	  display: flex;
+	  flex-wrap: wrap;
+	  gap: 20px;
+	  align-items: flex-end;
+	  margin-top: 30px;
+	  margin-bottom: 10px;
+	}
 
-    button {
-      margin-top: 10px;
-      padding: 8px 15px;
-      border: none;
-      background-color: #7aa9d6;
-      color: white;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background-color 0.3s ease;
-    }
+	.filters > div {
+	  flex: 1;
+	  min-width: 160px;
+	}
 
-    button:hover {
-      background-color: #5f8cb7;
-    }
+	.filters input,
+	.filters select {
+	  width: 100%;
+	  padding: 8px;
+	  font-size: 14px;
+	  border: 1px solid #ccc;
+	  border-radius: 6px;
+	  box-sizing: border-box;
+	}
 
-    .paginacao {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
+	.filters .filter-button button {
+	  padding: 8px 16px;
+	  font-size: 14px;
+	  background-color: #7aa9d6;
+	  color: white;
+	  border: none;
+	  border-radius: 6px;
+	  font-weight: bold;
+	  cursor: pointer;
+	  transition: background 0.3s;
+	  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	  /* width: 100%;  <-- REMOVE ISTO */
+	}
 
-    .paginacao button {
-      background-color: #7aa9d6;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      font-size: 14px;
-      border-radius: 50%;
-      cursor: pointer;
-      min-width: 36px;
-      height: 36px;
-      font-weight: bold;
-      transition: 0.2s;
-    }
+	.filters .filter-button button:hover {
+	  background-color: #5f8cb7;
+	}
 
-    .paginacao button.active {
-      background-color: #347fd4;
-      box-shadow: 0 0 0 2px #dceeff;
-    }
+
+	table {
+	  width: 100%;
+	  margin-top: 30px;
+	  border-collapse: collapse;
+	  background-color: white;
+	  border-radius: 12px;
+	  overflow: hidden;
+	  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+	}
+
+	table, th, td {
+	  border: 1px solid #ddd;
+	}
+
+	th, td {
+	  padding: 12px;
+	  text-align: center;
+	}
+
+	th {
+	  background-color: #7aa9d6;
+	  color: white;
+	}
+
+	table tr:last-child td {
+	  border-bottom: none;
+	}
+
+	h3 {
+	  margin-top: 40px;
+	  margin-bottom: 10px;
+	  font-size: 1.3rem;
+	}
+
+	.paginacao {
+	  display: flex;
+	  justify-content: center;
+	  flex-wrap: wrap;
+	  gap: 10px;
+	  margin-top: 20px;
+	}
+
+	.paginacao button {
+	  background-color: #7aa9d6;
+	  color: white;
+	  border: none;
+	  padding: 6px 12px;
+	  font-size: 14px;
+	  border-radius: 50%;
+	  cursor: pointer;
+	  min-width: 36px;
+	  height: 36px;
+	  font-weight: bold;
+	  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	}
+
+	.paginacao button.active {
+	  background-color: #347fd4;
+	  box-shadow: 0 0 0 2px #dceeff;
+	}
+
+	button.voltar {
+	  margin-top: 40px;
+	  background-color: #7aa9d6;
+	  color: white;
+	  padding: 10px 24px;
+	  border-radius: 6px;
+	  border: none;
+	  cursor: pointer;
+	  font-weight: bold;
+	  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	  transition: background 0.3s;
+	}
+
+	button.voltar:hover {
+	  background-color: #5f8cb7;
+	}
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="patient-info">
-      <h3>Informações do Paciente</h3>
-      <p><strong>Nome:</strong> <span id="patientName">Carregando...</span></p>
-      <p><strong>Número de Utente:</strong> <span id="patientNumero_utente">Carregando...</span></p>
-      <p><strong>Contacto:</strong> <span id="patientContact">Carregando...</span></p>
-    </div>
+    <div class="top-section">
+      <div class="patient-info">
+        <h3>Informações do Paciente</h3>
+        <p><strong>Nome:</strong> <span id="patientName">Carregando...</span></p>
+        <p><strong>Número de Utente:</strong> <span id="patientNumero_utente">Carregando...</span></p>
+		<p><strong>Email:</strong> <span id="patientEmail">Carregando...</span></p>
+        <p><strong>Contacto:</strong> <span id="patientContact">Carregando...</span></p>
+		</div>
+		<div class="grafico-wrapper">
+		  <h3>Gráfico de Desempenho</h3>
+		  <div onclick="abrirModal()" style="cursor: pointer;">
+		    <canvas id="graficoDesempenho"></canvas>
+		  </div>
+		</div>
+		</div>
+	<div id="graficoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+	  <div style="background:white; padding:30px; border-radius:12px; position:relative; max-width:80%; width:900px; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+	    <button onclick="fecharModal()" style="position:absolute; top:10px; right:10px; background:#7aa9d6; color:white; border:none; border-radius:6px; padding:6px 12px; font-weight:bold; cursor:pointer;">Fechar</button>
+	    <canvas id="graficoModalCanvas" style="width:100% !important; height:400px !important;"></canvas>
+	  </div>
+	</div>
 
-    <div class="filters">
-      <div>
-        <label for="filterDate">Data</label>
-        <input type="date" id="filterDate" />
-      </div>
-      <div>
-        <label for="filterGame">Jogo</label>
-        <select id="filterGame"></select>
-      </div>
-      <div>
-        <label for="filterLevel">Nível</label>
-        <select id="filterLevel"></select>
-      </div>
-      <div>
-        <label for="filterHints">Dicas</label>
-        <select id="filterHints"></select>
-      </div>
-      <div>
-        <label for="filterTime">Tempo Máximo</label>
-        <input type="text" id="filterTime" placeholder="Tempo Máximo (segundos)" />
-      </div>
-      <button onclick="applyFilters()">Filtrar</button>
-    </div>
-  </div>
-
-  <div class="container">
+	<div class="filters">
+	  <div>
+	    <label for="filterDateStart">Data Início</label>
+	    <input type="date" id="filterDateStart" />
+	  </div>
+	  <div>
+	    <label for="filterDateEnd">Data Fim</label>
+	    <input type="date" id="filterDateEnd" />
+	  </div> 
+	  <div>
+	    <label for="filterGame">Jogo</label>
+	    <select id="filterGame"></select>
+	  </div>
+	  <div>
+	    <label for="filterLevel">Nível</label>
+	    <select id="filterLevel"></select>
+	  </div>
+	  <div>
+	    <label for="filterHints">Dicas</label>
+	    <select id="filterHints"></select>
+	  </div>
+	  <div>
+	    <label for="filterTime">Tempo Máximo</label>
+	    <input type="text" id="filterTime" placeholder="Tempo Máximo (segundos)" />
+	  </div>
+	  <div class="filter-button">
+	    <label>&nbsp;</label>
+	    <button onclick="applyFilters()">Filtrar</button>
+	  </div>
+	</div>
     <h3>Histórico de Jogos</h3>
     <table>
       <thead>
@@ -172,16 +265,16 @@
       <tbody id="historicoTable"></tbody>
     </table>
     <div class="paginacao" id="paginacao"></div>
-  </div>
 
-  <button onclick="voltar()">Voltar</button>
+    <button class="voltar" onclick="voltar()">Voltar</button>
+  </div>
 
   <script>
     let historico = [];
     let historicoFiltrado = [];
     let patientData = {};
     let paginaAtual = 1;
-    const jogosPorPagina = 15;
+    const jogosPorPagina = 10;
 
     function getId_utenteFromURL() {
       const params = new URLSearchParams(window.location.search);
@@ -207,6 +300,7 @@
 
         document.getElementById("patientName").textContent = patientData.nome || "Não disponível";
         document.getElementById("patientNumero_utente").textContent = patientData.numero_utente || "Não disponível";
+		document.getElementById("patientEmail").textContent = patientData.email || "Não disponível"
         document.getElementById("patientContact").textContent = patientData.contacto || "Não disponível";
       } catch (error) {
         console.error("Erro ao carregar dados do paciente:", error);
@@ -238,6 +332,7 @@
         renderHistorico();
         renderPaginacao();
         carregarFiltros();
+        renderGraficoDesempenho(false);
       } catch (error) {
         console.error("Erro ao buscar histórico de partidas:", error);
       }
@@ -253,9 +348,9 @@
 
       pagina.forEach(item => {
         const dataFormatada = item.data_jogo ? new Date(item.data_jogo).toLocaleDateString("pt-PT") : "—";
-        const tempoFormatado = item.tempo ? `${item.tempo}s` : "—";
+        const tempoFormatado = item.tempo != null ? `${Math.abs(item.tempo)}s` : "—";
         const nivel = item.nivel || "—";
-        const dicas = String(item.usou_ajuda) === "true" || item.usou_ajuda === true ? "Sim" : "Não";
+        const dicas = item.usou_ajuda ? "Sim" : "Não";
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -274,34 +369,18 @@
       paginacao.innerHTML = "";
 
       const totalPaginas = Math.ceil(historicoFiltrado.length / jogosPorPagina);
-      const mostrarPaginas = [];
-
-      if (totalPaginas <= 3) {
-        for (let i = 1; i <= totalPaginas; i++) mostrarPaginas.push(i);
-      } else {
-        if (paginaAtual > 2) mostrarPaginas.push(1, "...");
-        const inicio = Math.max(1, paginaAtual - 1);
-        const fim = Math.min(totalPaginas, paginaAtual + 1);
-        for (let i = inicio; i <= fim; i++) mostrarPaginas.push(i);
-        if (paginaAtual < totalPaginas - 1) mostrarPaginas.push("...", totalPaginas);
-      }
-
-      mostrarPaginas.forEach(p => {
+      for (let i = 1; i <= totalPaginas; i++) {
         const btn = document.createElement("button");
-        if (p === "...") {
-          btn.textContent = "...";
-          btn.disabled = true;
-        } else {
-          btn.textContent = p;
-          btn.onclick = () => {
-            paginaAtual = p;
-            renderHistorico();
-            renderPaginacao();
-          };
-          if (p === paginaAtual) btn.classList.add("active");
-        }
+        btn.textContent = i;
+        btn.classList.toggle("active", i === paginaAtual);
+        btn.onclick = () => {
+          paginaAtual = i;
+          renderHistorico();
+          renderPaginacao();
+          renderGraficoDesempenho(historicoFiltrado.length !== historico.length);
+        };
         paginacao.appendChild(btn);
-      });
+      }
     }
 
     function carregarFiltros() {
@@ -333,20 +412,30 @@
     }
 
     function applyFilters() {
-      const data = document.getElementById("filterDate").value;
+      const dataInicio = document.getElementById("filterDateStart").value;
+      const dataFim = document.getElementById("filterDateEnd").value;
       const jogo = document.getElementById("filterGame").value;
       const nivel = document.getElementById("filterLevel").value;
       const dicas = document.getElementById("filterHints").value;
       const tempoMax = document.getElementById("filterTime").value;
 
       historicoFiltrado = historico.filter(item => {
-        const dataValida = data ? new Date(item.data_jogo).toISOString().split("T")[0] === data : true;
+        if (!item.data_jogo) return false;
+
+        const dataItem = new Date(item.data_jogo).toISOString().split("T")[0];
+
+        const dataValida =
+          (dataInicio && dataFim && dataItem >= dataInicio && dataItem <= dataFim) ||
+          (dataInicio && !dataFim && dataItem >= dataInicio) ||
+          (!dataInicio && dataFim && dataItem <= dataFim) ||
+          (!dataInicio && !dataFim);
+
         const jogoValido = jogo ? item.nomeJogo === jogo : true;
-        const nivelValido = nivel ? item.nivel === nivel : true;
+        const nivelValido = nivel ? item.nivel.toString() === nivel : true;
         const dicasTexto = item.usou_ajuda ? "Sim" : "Não";
         const dicasValida = dicas ? dicasTexto === dicas : true;
         const tempoValido = tempoMax && !isNaN(tempoMax)
-          ? parseInt(item.tempo) <= parseInt(tempoMax)
+          ? Math.abs(parseInt(item.tempo)) <= parseInt(tempoMax)
           : true;
 
         return dataValida && jogoValido && nivelValido && dicasValida && tempoValido;
@@ -355,17 +444,228 @@
       paginaAtual = 1;
       renderHistorico();
       renderPaginacao();
+      renderGraficoDesempenho(true);
     }
 
     function voltar() {
       window.history.back();
     }
 
+	function renderGraficoDesempenho(filtrado = false) {
+	  const ctx = document.getElementById("graficoDesempenho").getContext("2d");
+
+	  const dadosOrdenados = [...historicoFiltrado]
+	    .sort((a, b) => new Date(b.data_jogo) - new Date(a.data_jogo));
+
+	  const dadosParaGrafico = filtrado
+	    ? dadosOrdenados.reverse()
+	    : dadosOrdenados.slice(0, 10).reverse();
+
+	  const abreviaNome = nome => {
+	    if (!nome) return "—";
+	    if (nome.includes("Pares")) return "Pares";
+	    if (nome.includes("Memória")) return "Memória";
+	    return nome;
+	  };
+
+	  const labels = dadosParaGrafico.map(item =>
+	    `${abreviaNome(item.nomeJogo)} N${item.nivel || "—"}`
+	  );
+
+	  const tempos = dadosParaGrafico.map(item => Math.abs(item.tempo || 0));
+
+	  const cores = dadosParaGrafico.map(item =>
+	    item.usou_ajuda ? "rgba(255, 99, 132, 0.7)" : "rgba(75, 192, 192, 0.7)"
+	  );
+
+	  if (window.grafico) window.grafico.destroy();
+
+	  window.grafico = new Chart(ctx, {
+	    type: "bar",
+	    data: {
+	      labels: labels,
+	      datasets: [{
+	        label: "Tempo por Jogo (s)",
+	        data: tempos,
+	        backgroundColor: cores,
+	        borderColor: "rgba(0, 0, 0, 0.1)",
+	        borderWidth: 1,
+	        barThickness: 20,
+	        maxBarThickness: 30
+	      }]
+	    },
+	    options: {
+	      responsive: true,
+	      maintainAspectRatio: false,
+	      plugins: {
+	        legend: { display: false },
+	        tooltip: {
+	          callbacks: {
+	            label: function(context) {
+	              const index = context.dataIndex;
+	              const item = dadosParaGrafico[index];
+	              const dica = item.usou_ajuda ? "Sim" : "Não";
+	              return `Tempo: ${Math.abs(item.tempo)}s | Dica: ${dica}`;
+	            }
+	          }
+	        },
+	        title: {
+	          display: true,
+	          text: "Desempenho do Utente",
+	          font: {
+	            size: 14
+	          }
+	        }
+	      },
+	      scales: {
+	        y: {
+	          beginAtZero: true,
+	          title: {
+	            display: true,
+	            text: 'Tempo (segundos)',
+	            font: {
+	              size: 12
+	            }
+	          },
+	          ticks: {
+	            font: {
+	              size: 10
+	            }
+	          }
+	        },
+	        x: {
+	          ticks: {
+	            maxRotation: 45,
+	            minRotation: 45,
+	            font: {
+	              size: 10
+	            }
+	          }
+	        }
+	      }
+	    }
+	  });
+	}
+
+
     inicializar();
     async function inicializar() {
       await carregarPaciente();
       await carregarRelatorio();
     }
+	function abrirModal() {
+	  const modal = document.getElementById("graficoModal");
+	  modal.style.display = "flex";
+	  setTimeout(() => renderGraficoModal(historicoFiltrado.length !== historico.length), 100);
+	}
+
+	function fecharModal() {
+	  if (window.graficoModal instanceof Chart) {
+	    window.graficoModal.destroy();
+	  }
+	  document.getElementById("graficoModal").style.display = "none";
+	}
+
+	function renderGraficoModal(filtrado = false) {
+	  const canvas = document.getElementById("graficoModalCanvas");
+	  if (!canvas) return;
+
+	  if (window.graficoModal instanceof Chart) {
+	    window.graficoModal.destroy();
+	    const ctxClear = canvas.getContext("2d");
+	    ctxClear.clearRect(0, 0, canvas.width, canvas.height);
+	  }
+
+	  const ctx = canvas.getContext("2d");
+
+	  const dadosOrdenados = [...historicoFiltrado].sort((a, b) => new Date(b.data_jogo) - new Date(a.data_jogo));
+	  const dadosFiltrados = filtrado ? dadosOrdenados.reverse() : dadosOrdenados.slice(0, 10).reverse();
+
+	  const dadosMemoria = dadosFiltrados.filter(j => j.nomeJogo.includes("Memória"));
+	  const dadosPares = dadosFiltrados.filter(j => j.nomeJogo.includes("Pares"));
+	  const dadosParaGrafico = [...dadosPares, { separador: true }, ...dadosMemoria];
+
+	  const labels = dadosParaGrafico.map(item =>
+	    item.separador ? "" : `${item.nomeJogo.includes("Memória") ? "Memória" : "Pares"} N${item.nivel || "—"}`
+	  );
+
+	  const tempos = dadosParaGrafico.map(item => item.separador ? 0 : Math.abs(item.tempo || 0));
+
+	  const cores = dadosParaGrafico.map(item =>
+	    item.separador ? "rgba(0,0,0,0)" :
+	    item.usou_ajuda ? "rgba(255, 99, 132, 0.7)" : "rgba(75, 192, 192, 0.7)"
+	  );
+
+	  window.graficoModal = new Chart(ctx, {
+	    type: "bar",
+	    data: {
+	      labels: labels,
+	      datasets: [{
+	        label: "Tempo por Jogo (s)",
+	        data: tempos,
+	        backgroundColor: cores,
+	        borderColor: "rgba(0, 0, 0, 0.1)",
+	        borderWidth: 1
+	      }]
+	    },
+	    options: {
+	      responsive: true,
+	      maintainAspectRatio: false,
+		  plugins: {
+		    legend: {
+		      display: true,
+		      labels: {
+		        generateLabels: function() {
+		          return [
+		            {
+		              text: 'Sem Dica',
+		              fillStyle: 'rgba(75, 192, 192, 0.7)', // azul
+		              strokeStyle: '#000',
+		              lineWidth: 0
+		            },
+		            {
+		              text: 'Com Dica',
+		              fillStyle: 'rgba(255, 99, 132, 0.7)', // rosa
+		              strokeStyle: '#000',
+		              lineWidth: 0
+		            }
+		          ];
+		        }
+		      }
+		    },
+		    tooltip: {
+		      callbacks: {
+		        label: function(context) {
+		          const item = dadosParaGrafico[context.dataIndex];
+		          const dica = item.usou_ajuda ? "Sim" : "Não";
+		          return `Tempo: ${Math.abs(item.tempo)}s | Dica: ${dica}`;
+		        }
+		      }
+		    },
+		    title: {
+		      display: true,
+		      text: "Desempenho Detalhado do Utente"
+		    }
+		  },
+
+	      scales: {
+	        y: {
+	          beginAtZero: true,
+	          title: {
+	            display: true,
+	            text: 'Tempo (segundos)'
+	          }
+	        },
+	        x: {
+	          ticks: {
+	            maxRotation: 45,
+	            minRotation: 45
+	          }
+	        }
+	      }
+	    }
+	  });
+	}
   </script>
 </body>
 </html>

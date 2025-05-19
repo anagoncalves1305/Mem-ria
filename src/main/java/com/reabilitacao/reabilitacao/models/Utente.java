@@ -61,7 +61,6 @@ public class Utente {
     @Column(nullable = true)
     private String tokenValidacao;
 
-    // Getters personalizados
     public Integer getId() {
         return id_utente;
     }

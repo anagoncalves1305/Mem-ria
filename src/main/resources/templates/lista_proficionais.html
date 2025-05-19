@@ -143,16 +143,12 @@
               if (temCodigo) {
                 window.location.href = "inicial.html";
               }
-              // Caso não tenha código, apenas permanece na página.
               return;
             }
-            // Se quiser trocar, continua na página e carrega a lista
             carregarProfissionais();
           } else if (temCodigo) {
-            // Se não tiver profissional mas já tiver código, vai para a página inicial
             window.location.href = "inicial.html";
           } else {
-            // Se não tiver nem profissional nem código, continua normalmente
             carregarProfissionais();
           }
         })
