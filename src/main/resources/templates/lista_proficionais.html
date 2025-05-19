@@ -130,27 +130,20 @@
         return;
       }
 
-      // Primeiro, busca os dados do utente
       fetch(`http://localhost:8080/api/utentes/${id_utente}`)
         .then((res) => res.json())
         .then((utente) => {
-          const temProfissional = utente.id_profissional !== null;
-          const temCodigo = utente.codigo_acesso !== null && utente.codigo_acesso !== "";
+			const temProfissional = !!utente.id_profissional;
 
           if (temProfissional) {
             const resposta = confirm("Já tens um profissional associado. Tens a certeza que queres trocar de profissional?");
             if (!resposta) {
-              if (temCodigo) {
-                window.location.href = "inicial.html";
-              }
+              window.location.href = "inicial.html";
               return;
             }
-            carregarProfissionais();
-          } else if (temCodigo) {
-            window.location.href = "inicial.html";
-          } else {
-            carregarProfissionais();
           }
+
+          carregarProfissionais();
         })
         .catch((err) => {
           console.error("Erro ao verificar dados do utente:", err);
@@ -172,7 +165,7 @@
               div.className = "profissional";
               div.innerHTML = `
                 <label style="display: flex; align-items: center; width: 100%; cursor: pointer;">
-                  <input type="radio" name="profissional" value="${prof.id_Profissional}" />
+                  <input type="radio" name="profissional" value="${prof.id_profissional}" />
                   <div class="info">
                     <strong>${prof.nome}</strong><br />
                     Especialidade: ${prof.especialidade}<br />

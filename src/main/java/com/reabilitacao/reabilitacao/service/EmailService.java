@@ -13,7 +13,6 @@ import java.io.IOException;
 public class EmailService {
 
 
-
     private final String remetente = "memoriaviva13@gmail.com";
 
     public void enviarEmailConfirmacao(String para, String token) throws IOException {
