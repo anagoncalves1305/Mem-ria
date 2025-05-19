@@ -132,19 +132,22 @@
 
       fetch(`http://localhost:8080/api/utentes/${id_utente}`)
         .then((res) => res.json())
-        .then((utente) => {
-			const temProfissional = !!utente.id_profissional;
+		.then((utente) => {
+		  console.log("Utente recebido:", utente);
 
-          if (temProfissional) {
-            const resposta = confirm("Já tens um profissional associado. Tens a certeza que queres trocar de profissional?");
-            if (!resposta) {
-              window.location.href = "inicial.html";
-              return;
-            }
-          }
+		  const temProfissional = typeof utente.id_Profissional === 'number' && utente.id_Profissional > 0;
 
-          carregarProfissionais();
-        })
+		  if (temProfissional) {
+		    const resposta = confirm("Já tens um profissional associado. Tens a certeza que queres trocar de profissional?");
+		    if (!resposta) {
+		      window.location.href = "inicial.html";
+		      return;
+		    }
+		  }
+
+		  carregarProfissionais();
+		})
+
         .catch((err) => {
           console.error("Erro ao verificar dados do utente:", err);
           alert("Erro ao carregar os dados do utente.");

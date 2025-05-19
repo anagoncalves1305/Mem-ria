@@ -438,10 +438,28 @@
         },
         options: {
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: "Desempenho do Utente" }
-          },
+		  plugins: {
+		    legend: {
+		      display: true,
+		      labels: {
+		        generateLabels: function() {
+		          return [
+		            {
+		              text: 'Sem Dica',
+		              fillStyle: 'rgba(75, 192, 192, 0.7)',
+		              strokeStyle: '#000',
+		              lineWidth: 0
+		            },
+		            {
+		              text: 'Com Dica',
+		              fillStyle: 'rgba(255, 99, 132, 0.7)',
+		              strokeStyle: '#000',
+		              lineWidth: 0
+		            }
+		          ];
+		        }
+		      }
+		    },
           responsive: true,
           scales: {
             y: {
