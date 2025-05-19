@@ -19,13 +19,13 @@ Plataforma Web para reabilitação cognitiva de utentes, com jogos interativos, 
 ## 📸 Capturas de Ecrã
 
 ### 🎮 Jogo da Memória
-![Jogo da Memória](imagens/jogo_memoria.png)
+![Jogo da Memória](Imagens/jogo_memoria.png)
 
 ### 🔐 Login
-![Login](imagens/login.png)
+![Login](Imagens/login.png)
 
 ### 📊 Relatório e Gráfico de Desempenho
-![Relatório do Paciente](imagens/relatorio.png)
+![Relatório do Paciente](Imagens/relatorio.png)
 
 ## 🎥 Vídeo de Demonstração
 
