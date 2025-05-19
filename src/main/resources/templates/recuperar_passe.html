@@ -182,7 +182,7 @@
         return;
       }
 
-      const regex = /^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/;
+	  const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       if (!regex.test(nova1)) {
         mensagem.textContent = "Password deve ter no mínimo 8 caracteres, incluindo letra, número e símbolo.";
         mensagem.classList.add("erro");

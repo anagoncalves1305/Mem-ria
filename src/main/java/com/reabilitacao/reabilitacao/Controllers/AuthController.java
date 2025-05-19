@@ -218,7 +218,7 @@ public class AuthController {
                 "</style></head><body>" +
                 "<div class='box'>" +
                 "<h2>" + mensagem + "</h2>" +
-                "<a class='btn' href='http://localhost:8080'>Voltar ao site</a>" +
+                "<a class='btn' href='http://localhost:8080/login'>Voltar ao site</a>" +
                 "</div></body></html>";
 
         return ResponseEntity.ok().header("Content-Type", "text/html").body(html);

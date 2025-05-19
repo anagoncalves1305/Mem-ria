@@ -182,189 +182,182 @@
 </head>
 <body>
 
-	<div class="container">
-	  <h2>Histórico de Jogos</h2>
-	  <table>
-	    <thead>
-	    <tr>
-	      <th>Data</th>
-	      <th>Jogo</th>
-	      <th>Nível</th>
-	      <th>Tempo</th>
-	      <th>Dicas</th>
-	    </tr>
-	    </thead>
-	    <tbody id="tabelaHistorico"></tbody>
-	  </table>
+  <div class="container">
+    <h2>Histórico de Jogos</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>Data</th>
+        <th>Jogo</th>
+        <th>Nível</th>
+        <th>Tempo</th>
+        <th>Dicas</th>
+      </tr>
+      </thead>
+      <tbody id="tabelaHistorico"></tbody>
+    </table>
 
-	  <div class="botoes">
-	    <button onclick="voltarInicio()">Voltar ao Início</button>
-	    <div class="paginacao" id="paginacao"></div>
-	    <button onclick="voltarJogos()">Voltar para os Jogos</button>
-	    <button onclick="abrirModal()">Ver Gráfico</button>
-	  </div>
-	</div>
+    <div class="botoes">
+      <button onclick="voltarInicio()">Voltar ao Início</button>
+      <div class="paginacao" id="paginacao"></div>
+      <button onclick="voltarJogos()">Voltar para os Jogos</button>
+      <button onclick="abrirModal()">Ver Gráfico</button>
+    </div>
+  </div>
 
-	<div id="graficoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000;">
-	  <div style="background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 1000px; position: relative;">
-	    <button onclick="fecharModal()" style="position: absolute; top: 10px; right: 10px; background: #7aa9d6; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-weight: bold; cursor: pointer;">Fechar</button>
-	    <h3>Desempenho do Utente</h3>
-	    <div class="modal-filtros" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-	      <input type="date" id="modalFilterStart" />
-	      <input type="date" id="modalFilterEnd" />
-	      <select id="modalFilterJogo"></select>
-	      <select id="modalFilterNivel"></select>
-	      <select id="modalFilterDicas">
-	        <option value="">Dicas</option>
-	        <option value="Sim">Sim</option>
-	        <option value="Não">Não</option>
-	      </select>
-	      <button onclick="renderGraficoModal()" style="background-color: #6caee0; color: white; border: none; padding: 8px 20px; font-size: 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">Filtrar</button>
-	    </div>
-	    <canvas id="graficoModalCanvas"></canvas>
-	  </div>
-	</div>
+  <div id="graficoModal">
+    <div class="modal-conteudo">
+      <button class="fechar" onclick="fecharModal()">Fechar</button>
+      <h3>Desempenho do Utente</h3>
+      <div class="modal-filtros">
+        <input type="date" id="modalFilterStart" />
+        <input type="date" id="modalFilterEnd" />
+        <select id="modalFilterJogo"></select>
+        <select id="modalFilterNivel"></select>
+        <select id="modalFilterDicas">
+          <option value="">Dicas</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+        <button onclick="renderGraficoModal()">Filtrar</button>
+      </div>
+      <canvas id="graficoModalCanvas"></canvas>
+    </div>
+  </div>
 
-<script>
-  let historico = [];
-  let paciente = {};
-  let paginaAtual = 1;
-  const jogosPorPagina = 10;
+  <script>
+    let historico = [];
+    let paciente = {};
+    let paginaAtual = 1;
+    const jogosPorPagina = 10;
 
-  function getIdUtenteFromLocalStorage() {
-    return localStorage.getItem("id_utente");
-  }
-
-  async function carregarPaciente() {
-    const idUtente = getIdUtenteFromLocalStorage();
-    if (!idUtente) {
-      alert("Número de utente não informado.");
-      window.location.href = "inicial.html";
-      return;
+    function getIdUtenteFromLocalStorage() {
+      return localStorage.getItem("id_utente");
     }
 
-    try {
-      const response = await fetch(`http://localhost:8080/api/utentes/${idUtente}`);
-      if (!response.ok) throw new Error('Erro ao carregar paciente.');
-      paciente = await response.json();
-    } catch (error) {
-      console.error("Erro ao carregar paciente:", error);
-    }
-  }
-
-  async function carregarHistorico() {
-    if (!paciente || !paciente.id) return;
-
-    try {
-      const partidasRes = await fetch("http://localhost:8080/api/partidas");
-      const todasPartidas = await partidasRes.json();
-      const minhasPartidas = todasPartidas.filter(p => p.id_utente === paciente.id);
-
-      const jogosRes = await fetch("http://localhost:8080/api/jogos");
-      const jogos = await jogosRes.json();
-
-      historico = minhasPartidas.map(p => {
-        const jogo = jogos.find(j => j.id_jogo === p.id_jogo);
-        return {
-          data: p.data_jogo,
-          nomeJogo: jogo?.nome_jogo || `Jogo #${p.id_jogo}`,
-          nivel: p.nivel,
-          tempo: p.tempo,
-          usou_ajuda: p.usou_ajuda
-        };
-      });
-
-      historico.sort((a, b) => new Date(b.data) - new Date(a.data));
-      renderHistorico();
-      renderPaginacao();
-    } catch (error) {
-      console.error("Erro ao carregar histórico:", error);
-    }
-  }
-
-  function renderHistorico() {
-    const tabela = document.getElementById("tabelaHistorico");
-    tabela.innerHTML = "";
-
-    if (historico.length === 0) {
-      tabela.innerHTML = "<tr><td colspan='5'>Sem histórico de jogos.</td></tr>";
-      return;
-    }
-
-    const inicio = (paginaAtual - 1) * jogosPorPagina;
-    const fim = inicio + jogosPorPagina;
-    const pagina = historico.slice(inicio, fim);
-
-    pagina.forEach(p => {
-      const data = p.data ? new Date(p.data).toLocaleDateString("pt-PT") : "—";
-      const nivel = p.nivel || "—";
-	  const tempo = p.tempo != null ? `${Math.abs(p.tempo)}s` : "—";
-      const dicas = p.usou_ajuda ? "Sim" : "Não";
-
-      const linha = document.createElement("tr");
-      linha.innerHTML = `
-        <td>${data}</td>
-        <td>${p.nomeJogo}</td>
-        <td>${nivel}</td>
-        <td>${tempo}</td>
-        <td>${dicas}</td>
-      `;
-      tabela.appendChild(linha);
-    });
-  }
-
-  function renderPaginacao() {
-    const totalPaginas = Math.ceil(historico.length / jogosPorPagina);
-    const paginacaoDiv = document.getElementById("paginacao");
-    paginacaoDiv.innerHTML = "";
-
-    const mostrarPaginas = [];
-
-    if (totalPaginas <= 3) {
-      for (let i = 1; i <= totalPaginas; i++) mostrarPaginas.push(i);
-    } else {
-      if (paginaAtual > 2) mostrarPaginas.push(1, "...");
-      let inicio = Math.max(1, paginaAtual - 1);
-      let fim = Math.min(totalPaginas, paginaAtual + 1);
-      for (let i = inicio; i <= fim; i++) mostrarPaginas.push(i);
-      if (paginaAtual < totalPaginas - 1) mostrarPaginas.push("...", totalPaginas);
-    }
-
-    mostrarPaginas.forEach(p => {
-      const btn = document.createElement("button");
-      if (p === "...") {
-        btn.textContent = "...";
-        btn.disabled = true;
-        btn.style.cursor = "default";
-      } else {
-        btn.textContent = p;
-        btn.onclick = () => {
-          paginaAtual = p;
-          renderHistorico();
-          renderPaginacao();
-        };
-        if (p === paginaAtual) btn.classList.add("active");
+    async function carregarPaciente() {
+      const idUtente = getIdUtenteFromLocalStorage();
+      if (!idUtente) {
+        alert("Número de utente não informado.");
+        window.location.href = "inicial.html";
+        return;
       }
-      paginacaoDiv.appendChild(btn);
-    });
-  }
 
-  function voltarInicio() {
-    window.location.href = "inicial.html";
-  }
+      try {
+        const response = await fetch(`http://localhost:8080/api/utentes/${idUtente}`);
+        if (!response.ok) throw new Error('Erro ao carregar paciente.');
+        paciente = await response.json();
+      } catch (error) {
+        console.error("Erro ao carregar paciente:", error);
+      }
+    }
 
-  function voltarJogos() {
-    window.location.href = "jogos.html";
-  }
+    async function carregarHistorico() {
+      if (!paciente || !paciente.id) return;
 
-  async function inicializar() {
-    await carregarPaciente();
-    await carregarHistorico();
-  }
+      try {
+        const partidasRes = await fetch("http://localhost:8080/api/partidas");
+        const todasPartidas = await partidasRes.json();
+        const minhasPartidas = todasPartidas.filter(p => p.id_utente === paciente.id);
 
-  window.onload = inicializar;
-  
-  function abrirModal() {
+        const jogosRes = await fetch("http://localhost:8080/api/jogos");
+        const jogos = await jogosRes.json();
+
+        historico = minhasPartidas.map(p => {
+          const jogo = jogos.find(j => j.id_jogo === p.id_jogo);
+          return {
+            data: p.data_jogo,
+            nomeJogo: jogo?.nome_jogo || `Jogo #${p.id_jogo}`,
+            nivel: p.nivel,
+            tempo: p.tempo,
+            usou_ajuda: p.usou_ajuda
+          };
+        });
+
+        historico.sort((a, b) => new Date(b.data) - new Date(a.data));
+        renderHistorico();
+        renderPaginacao();
+      } catch (error) {
+        console.error("Erro ao carregar histórico:", error);
+      }
+    }
+
+    function renderHistorico() {
+      const tabela = document.getElementById("tabelaHistorico");
+      tabela.innerHTML = "";
+
+      if (historico.length === 0) {
+        tabela.innerHTML = "<tr><td colspan='5'>Sem histórico de jogos.</td></tr>";
+        return;
+      }
+
+      const inicio = (paginaAtual - 1) * jogosPorPagina;
+      const fim = inicio + jogosPorPagina;
+      const pagina = historico.slice(inicio, fim);
+
+      pagina.forEach(p => {
+        const data = p.data ? new Date(p.data).toLocaleDateString("pt-PT") : "—";
+        const nivel = p.nivel || "—";
+        const tempo = p.tempo != null ? `${Math.abs(p.tempo)}s` : "—";
+        const dicas = p.usou_ajuda ? "Sim" : "Não";
+
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${data}</td>
+          <td>${p.nomeJogo}</td>
+          <td>${nivel}</td>
+          <td>${tempo}</td>
+          <td>${dicas}</td>
+        `;
+        tabela.appendChild(linha);
+      });
+    }
+
+    function renderPaginacao() {
+      const totalPaginas = Math.ceil(historico.length / jogosPorPagina);
+      const paginacaoDiv = document.getElementById("paginacao");
+      paginacaoDiv.innerHTML = "";
+
+      const mostrarPaginas = [];
+
+      if (totalPaginas <= 3) {
+        for (let i = 1; i <= totalPaginas; i++) mostrarPaginas.push(i);
+      } else {
+        if (paginaAtual > 2) mostrarPaginas.push(1, "...");
+        let inicio = Math.max(1, paginaAtual - 1);
+        let fim = Math.min(totalPaginas, paginaAtual + 1);
+        for (let i = inicio; i <= fim; i++) mostrarPaginas.push(i);
+        if (paginaAtual < totalPaginas - 1) mostrarPaginas.push("...", totalPaginas);
+      }
+
+      mostrarPaginas.forEach(p => {
+        const btn = document.createElement("button");
+        if (p === "...") {
+          btn.textContent = "...";
+          btn.disabled = true;
+          btn.style.cursor = "default";
+        } else {
+          btn.textContent = p;
+          btn.onclick = () => {
+            paginaAtual = p;
+            renderHistorico();
+            renderPaginacao();
+          };
+          if (p === paginaAtual) btn.classList.add("active");
+        }
+        paginacaoDiv.appendChild(btn);
+      });
+    }
+
+    function voltarInicio() {
+      window.location.href = "inicial.html";
+    }
+
+    function voltarJogos() {
+      window.location.href = "jogos.html";
+    }
+
+    function abrirModal() {
       document.getElementById("graficoModal").style.display = "flex";
       preencherFiltrosModal();
       setTimeout(renderGraficoModal, 100);
@@ -438,28 +431,29 @@
         },
         options: {
           maintainAspectRatio: false,
-		  plugins: {
-		    legend: {
-		      display: true,
-		      labels: {
-		        generateLabels: function() {
-		          return [
-		            {
-		              text: 'Sem Dica',
-		              fillStyle: 'rgba(75, 192, 192, 0.7)',
-		              strokeStyle: '#000',
-		              lineWidth: 0
-		            },
-		            {
-		              text: 'Com Dica',
-		              fillStyle: 'rgba(255, 99, 132, 0.7)',
-		              strokeStyle: '#000',
-		              lineWidth: 0
-		            }
-		          ];
-		        }
-		      }
-		    },
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                generateLabels: function() {
+                  return [
+                    {
+                      text: 'Sem Dica',
+                      fillStyle: '#36a2eb',
+                      strokeStyle: '#000',
+                      lineWidth: 0
+                    },
+                    {
+                      text: 'Com Dica',
+                      fillStyle: '#ff6384',
+                      strokeStyle: '#000',
+                      lineWidth: 0
+                    }
+                  ];
+                }
+              }
+            }
+          },
           responsive: true,
           scales: {
             y: {
@@ -469,7 +463,11 @@
             x: {
               ticks: {
                 callback: function(value, index, values) {
-                  return this.getLabelForValue(value).replace('Jogo dos ', '').replace('Jogo da ', '').replace('Memória', 'Mem').replace('Pares', 'Pares');
+                  return this.getLabelForValue(value)
+                    .replace('Jogo dos ', '')
+                    .replace('Jogo da ', '')
+                    .replace('Memória', 'Mem')
+                    .replace('Pares', 'Pares');
                 },
                 maxRotation: 45,
                 minRotation: 45
@@ -479,8 +477,11 @@
         }
       });
     }
-</script>
 
+    window.onload = async function () {
+      await carregarPaciente();
+      await carregarHistorico();
+    };
+  </script>
 </body>
 </html>
-
