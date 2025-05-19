@@ -16,15 +16,15 @@ Plataforma Web para reabilitação cognitiva de utentes, com jogos interativos, 
 - Chat interativo com notificações
 - Marcação e gestão de consultas
 
-## Capturas de Ecrã 
+## 📸 Capturas de Ecrã
 
-### Jogo da Memória 
+### 🎮 Jogo da Memória
 ![Jogo da Memória](imagens/jogo_memoria.png)
 
-### Login 
+### 🔐 Login
 ![Login](imagens/login.png)
 
-### Relatório e Gráfico de Desempenho 
+### 📊 Relatório e Gráfico de Desempenho
 ![Relatório do Paciente](imagens/relatorio.png)
 
 ## 🎥 Vídeo de Demonstração
